@@ -62,6 +62,11 @@
                         <i class="fas fa-x-ray me-2"></i> Radiologi
                     </a>
                 </li>
+                <li class="{% if request.endpoint == 'main_bp.physiotherapy' %}active{% endif %}">
+                    <a href="{{ url_for('main_bp.physiotherapy') }}">
+                        <i class="fas fa-walking me-2"></i> Fisioterapi
+                    </a>
+                </li>
                 <li class="{% if request.endpoint == 'main_bp.billing_list' or request.endpoint == 'main_bp.add_billing' or request.endpoint == 'main_bp.view_billing' %}active{% endif %}">
                     <a href="{{ url_for('main_bp.billing_list') }}">
                         <i class="fas fa-file-invoice-dollar me-2"></i> Billing

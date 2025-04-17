@@ -16,11 +16,11 @@
 
 {% block content %}
 {% if action == "add" %}
-    {% include "add_billing.html" %}
+    {% include "add_billing.html" ignore missing %}
 {% elif action == "view" %}
-    {% include "view_billing.html" %}
+    {% include "view_billing.html" ignore missing %}
 {% elif action == "pay" %}
-    {% include "pay_billing.html" %}
+    {% include "pay_billing.html" ignore missing %}
 {% else %}
 <div class="row">
     <div class="col-lg-12 mb-4">

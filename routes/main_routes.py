@@ -383,6 +383,20 @@ def radiology():
     
     return render_template('radiology.html', 
                           radiology_requests=radiology_requests)
+                          
+@main_bp.route('/physiotherapy')
+def physiotherapy():
+    """Display the physiotherapy page"""
+    # Get physiotherapy appointments/sessions
+    physiotherapy_sessions = []
+    
+    # In a real application, these would come from the database
+    # For now, we'll create sample data for display purposes
+    today = datetime.now().strftime('%Y-%m-%d')
+    
+    return render_template('physiotherapy.html', 
+                          physiotherapy_sessions=physiotherapy_sessions,
+                          today=today)
 
 @main_bp.route('/billing')
 def billing_list():
