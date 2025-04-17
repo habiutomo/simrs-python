@@ -1,4 +1,3 @@
-
 {% extends "index.html" %}
 
 {% block page_title %}
@@ -193,19 +192,19 @@
                         <tbody>
                             {% if api_logs %}
                                 {% for log in api_logs %}
-                                <tr>
-                                    <td>{{ log.request_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                    <td>{{ log.endpoint }}</td>
-                                    <td>{{ log.request_data }}</td>
-                                    <td>
-                                        {% if log.is_success %}
-                                            <span class="badge bg-success">Sukses</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Gagal</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ log.response_code }}</td>
-                                </tr>
+                            <tr>
+                                <td>{{ log.timestamp }}</td>
+                                <td>{{ log.action }}</td>
+                                <td>{{ log.endpoint }}</td>
+                                <td>
+                                    {% if log.status == 'success' %}
+                                        <span class="badge bg-success">Sukses</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Gagal</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.details }}</td>
+                            </tr>
                                 {% endfor %}
                             {% else %}
                                 <tr>

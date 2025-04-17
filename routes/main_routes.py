@@ -813,11 +813,9 @@ def api_analytics_chart():
 @main_bp.route('/integration')
 def integration():
     """Display the system integration page"""
-    from models.bpjs import BPJSApiLog
-
-    # Get recent API logs
-    api_logs = BPJSApiLog.query.order_by(BPJSApiLog.request_timestamp.desc()).limit(10).all()
-
+    # Use data store for logs instead of direct DB query
+    api_logs = g.data_store.get_recent_activities(10)
+    
     return render_template('integration.html', api_logs=api_logs)
 
 @main_bp.route('/integration/bpjs', methods=['GET', 'POST'])
