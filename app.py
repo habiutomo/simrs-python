@@ -7,16 +7,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 # Initialize Flask application
 app = Flask(__name__)
-
-# Configure SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/simrs.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize database
-db.init_app(app)
-with app.app_context():
-    from utils.db_init import init_db
-    init_db()
 app.secret_key = os.environ.get("SESSION_SECRET", "simrs-development-key")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///simrs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
