@@ -71,7 +71,10 @@ def teardown_appcontext(exception):
     if hasattr(g, 'data_store'):
         g.data_store.save_to_file()
 
-# Load data from file when starting
+# Load data from file and create database tables when starting
 with app.app_context():
+    # Create all database tables
+    db.create_all()
+    
     # Initialize data loading
     data_store.load_from_file()
