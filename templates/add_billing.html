@@ -1,0 +1,335 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    Tambah Billing Baru
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Form Billing Baru</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('main_bp.add_billing') }}" method="POST" id="billingForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="patient_id" class="form-label">Pasien <span class="text-danger">*</span></label>
+                    <select class="form-select" id="patient_id" name="patient_id" required>
+                        <option value="">Pilih Pasien...</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.id }}">{{ patient.name }} ({{ patient.medical_record }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="visit_id" class="form-label">Kunjungan/Perawatan</label>
+                    <select class="form-select" id="visit_id" name="visit_id">
+                        <option value="">Pilih Kunjungan/Perawatan...</option>
+                        {% for appointment in appointments %}
+                        <option value="{{ appointment.id }}" data-patient="{{ appointment.patient_id }}">
+                            {{ appointment.appointment_date }} - {{ appointment.visit_type }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="issued_date" class="form-label">Tanggal Faktur <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="issued_date" name="issued_date" value="{{ today }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="due_date" class="form-label">Tanggal Jatuh Tempo <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="due_date" name="due_date" required>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label class="form-label">Item Tagihan <span class="text-danger">*</span></label>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="billing_items">
+                            <thead>
+                                <tr>
+                                    <th width="40%">Deskripsi</th>
+                                    <th width="15%">Jumlah</th>
+                                    <th width="20%">Harga (Rp)</th>
+                                    <th width="20%">Total (Rp)</th>
+                                    <th width="5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="billing_items_container">
+                                <tr class="billing-item">
+                                    <td>
+                                        <input type="text" class="form-control item-desc" name="description[]" required>
+                                        <select class="form-select mt-1" name="item_type[]">
+                                            <option value="service">Layanan</option>
+                                            <option value="medicine">Obat</option>
+                                            <option value="lab">Laboratorium</option>
+                                            <option value="radiology">Radiologi</option>
+                                            <option value="room">Kamar</option>
+                                            <option value="other">Lainnya</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control item-qty" name="quantity[]" value="1" min="1" required>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control item-price" name="unit_price[]" value="0" min="0" step="1000" required>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control item-total" value="0" readonly>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm remove-item">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5">
+                                        <button type="button" class="btn btn-sm btn-success" id="add_item_btn">
+                                            <i class="fas fa-plus"></i> Tambah Item
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="insurance_provider" class="form-label">Penyedia Asuransi</label>
+                                <select class="form-select" id="insurance_provider" name="insurance_provider">
+                                    <option value="">Tidak Ada</option>
+                                    <option value="bpjs">BPJS Kesehatan</option>
+                                    <option value="mandiri">Asuransi Mandiri</option>
+                                    <option value="prudential">Prudential</option>
+                                    <option value="allianz">Allianz</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="insurance_number" class="form-label">Nomor Asuransi</label>
+                                <input type="text" class="form-control" id="insurance_number" name="insurance_number">
+                            </div>
+                            <div class="mb-3">
+                                <label for="insurance_covered" class="form-label">Jumlah Ditanggung Asuransi (Rp)</label>
+                                <input type="number" class="form-control" id="insurance_covered" name="insurance_covered" value="0" min="0" step="1000">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status Pembayaran</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="pending">Menunggu Pembayaran</option>
+                                    <option value="paid">Lunas</option>
+                                    <option value="partial">Bayar Sebagian</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="total_amount" class="form-label">Total (Rp)</label>
+                                        <input type="text" class="form-control" id="total_amount" name="total_amount" value="0" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="patient_responsibility" class="form-label">Tagihan Pasien (Rp)</label>
+                                        <input type="text" class="form-control" id="patient_responsibility" name="patient_responsibility" value="0" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="notes" class="form-label">Catatan</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('main_bp.billing_list') }}" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Calculate due date (30 days from issue date by default)
+        const issuedDateInput = document.getElementById('issued_date');
+        const dueDateInput = document.getElementById('due_date');
+        
+        // Set default due date (30 days from issue date)
+        function updateDueDate() {
+            const issuedDate = new Date(issuedDateInput.value);
+            if (!isNaN(issuedDate.getTime())) {
+                const dueDate = new Date(issuedDate);
+                dueDate.setDate(dueDate.getDate() + 30);
+                dueDateInput.value = dueDate.toISOString().split('T')[0];
+            }
+        }
+        
+        // Set initial due date
+        updateDueDate();
+        
+        // Update due date when issued date changes
+        issuedDateInput.addEventListener('change', updateDueDate);
+        
+        // Filter appointments based on selected patient
+        const patientSelect = document.getElementById('patient_id');
+        const visitSelect = document.getElementById('visit_id');
+        
+        patientSelect.addEventListener('change', function() {
+            const selectedPatient = this.value;
+            for (const option of visitSelect.options) {
+                if (option.dataset.patient === selectedPatient || option.value === '') {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+            visitSelect.value = '';
+        });
+        
+        // Add new billing item
+        document.getElementById('add_item_btn').addEventListener('click', function() {
+            const container = document.getElementById('billing_items_container');
+            const newRow = container.querySelector('.billing-item').cloneNode(true);
+            
+            // Clear input values
+            newRow.querySelectorAll('input').forEach(input => {
+                if (input.type === 'number' && input.classList.contains('item-qty')) {
+                    input.value = '1';
+                } else if (input.type !== 'text' || !input.classList.contains('item-total')) {
+                    input.value = '';
+                }
+                
+                if (input.classList.contains('item-price') || input.classList.contains('item-qty')) {
+                    input.addEventListener('input', updateTotals);
+                }
+            });
+            
+            // Reset item total
+            newRow.querySelector('.item-total').value = '0';
+            
+            // Set up remove button
+            const removeBtn = newRow.querySelector('.remove-item');
+            removeBtn.addEventListener('click', function() {
+                if (container.querySelectorAll('.billing-item').length > 1) {
+                    this.closest('tr').remove();
+                    updateTotals();
+                } else {
+                    alert('Minimal harus ada satu item tagihan.');
+                }
+            });
+            
+            container.appendChild(newRow);
+        });
+        
+        // Calculate item total when price or quantity changes
+        function updateItemTotal(row) {
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            row.querySelector('.item-total').value = (qty * price).toLocaleString('id-ID');
+        }
+        
+        // Calculate totals
+        function updateTotals() {
+            let total = 0;
+            document.querySelectorAll('.billing-item').forEach(row => {
+                updateItemTotal(row);
+                const itemTotal = parseFloat(row.querySelector('.item-total').value.replace(/\./g, '').replace(',', '.')) || 0;
+                total += itemTotal;
+            });
+            
+            document.getElementById('total_amount').value = total.toLocaleString('id-ID');
+            
+            // Calculate patient responsibility (total - insurance)
+            const insuranceCovered = parseFloat(document.getElementById('insurance_covered').value) || 0;
+            const patientResponsibility = Math.max(0, total - insuranceCovered);
+            document.getElementById('patient_responsibility').value = patientResponsibility.toLocaleString('id-ID');
+        }
+        
+        // Set up event listeners for initial row
+        document.querySelectorAll('.billing-item').forEach(row => {
+            row.querySelectorAll('.item-price, .item-qty').forEach(input => {
+                input.addEventListener('input', updateTotals);
+            });
+            
+            const removeBtn = row.querySelector('.remove-item');
+            removeBtn.addEventListener('click', function() {
+                if (document.querySelectorAll('.billing-item').length > 1) {
+                    this.closest('tr').remove();
+                    updateTotals();
+                } else {
+                    alert('Minimal harus ada satu item tagihan.');
+                }
+            });
+        });
+        
+        // Update totals when insurance amount changes
+        document.getElementById('insurance_covered').addEventListener('input', updateTotals);
+        
+        // Initial calculation
+        updateTotals();
+        
+        // Form submission
+        document.getElementById('billingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Basic validation
+            const patientId = document.getElementById('patient_id').value;
+            if (!patientId) {
+                alert('Silakan pilih pasien.');
+                return;
+            }
+            
+            const items = document.querySelectorAll('.billing-item');
+            let isValid = true;
+            items.forEach(item => {
+                const desc = item.querySelector('.item-desc').value;
+                if (!desc) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                alert('Harap isi semua deskripsi item.');
+                return;
+            }
+            
+            // Convert formatted numbers to plain numbers for submission
+            document.getElementById('total_amount').value = 
+                parseFloat(document.getElementById('total_amount').value.replace(/\./g, '').replace(',', '.')) || 0;
+            
+            document.getElementById('patient_responsibility').value = 
+                parseFloat(document.getElementById('patient_responsibility').value.replace(/\./g, '').replace(',', '.')) || 0;
+            
+            // Submit the form
+            this.submit();
+        });
+    });
+</script>
+{% endblock %}

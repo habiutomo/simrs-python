@@ -501,7 +501,7 @@ def view_billing(bill_id):
                           patient=patient,
                           action="view")
 
-@main_bp.route('/billing/<bill_id>/pay', methods=['POST'])
+@main_bp.route('/billing/<bill_id>/pay', methods=['GET', 'POST'])
 def pay_billing(bill_id):
     """Record payment for a billing record"""
     bill = g.data_store.get_billing_record(bill_id)
@@ -509,6 +509,15 @@ def pay_billing(bill_id):
         flash('Billing record not found', 'error')
         return redirect(url_for('main_bp.billing_list'))
     
+    # GET request will show the payment form
+    if request.method == 'GET':
+        patient = g.data_store.get_patient(bill.patient_id)
+        return render_template('billing.html', 
+                              bill=bill, 
+                              patient=patient,
+                              action="pay")
+    
+    # POST request will process the payment
     amount = float(request.form.get('amount', 0))
     method = request.form.get('payment_method', 'cash')
     

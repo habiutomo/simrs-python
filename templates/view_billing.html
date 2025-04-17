@@ -1,0 +1,230 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    Detail Tagihan
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Informasi Tagihan #{{ bill.id }}</h5>
+                <div>
+                    <a href="{{ url_for('main_bp.pay_billing', bill_id=bill.id) }}" class="btn btn-sm btn-success {% if bill.status == 'paid' %}disabled{% endif %}">
+                        <i class="fas fa-money-bill"></i> Bayar
+                    </a>
+                    <button type="button" class="btn btn-sm btn-primary" id="printBill">
+                        <i class="fas fa-print"></i> Cetak
+                    </button>
+                    <a href="{{ url_for('main_bp.billing_list') }}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Informasi Pasien</h6>
+                        <table class="table table-sm table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th width="35%">Nama Pasien</th>
+                                    <td>{{ patient.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>No. Rekam Medis</th>
+                                    <td>{{ patient.medical_record_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Alamat</th>
+                                    <td>{{ patient.address }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Telepon</th>
+                                    <td>{{ patient.phone }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">Informasi Tagihan</h6>
+                        <table class="table table-sm table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th width="35%">No. Tagihan</th>
+                                    <td>{{ bill.id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <td>{{ bill.issued_date }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Jatuh Tempo</th>
+                                    <td>{{ bill.due_date }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>
+                                        {% if bill.status == 'pending' %}
+                                            <span class="badge bg-warning">Menunggu Pembayaran</span>
+                                        {% elif bill.status == 'paid' %}
+                                            <span class="badge bg-success">Lunas</span>
+                                        {% elif bill.status == 'partial' %}
+                                            <span class="badge bg-info">Bayar Sebagian</span>
+                                        {% elif bill.status == 'overdue' %}
+                                            <span class="badge bg-danger">Jatuh Tempo</span>
+                                        {% elif bill.status == 'cancelled' %}
+                                            <span class="badge bg-secondary">Dibatalkan</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ bill.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h6 class="mt-4 mb-3">Item Tagihan</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">No.</th>
+                                <th width="45%">Deskripsi</th>
+                                <th width="10%">Jenis</th>
+                                <th width="10%">Jumlah</th>
+                                <th width="15%">Harga (Rp)</th>
+                                <th width="15%">Total (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in bill.items %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ item.description }}</td>
+                                <td>
+                                    {% if item.item_type == 'service' %}
+                                        Layanan
+                                    {% elif item.item_type == 'medicine' %}
+                                        Obat
+                                    {% elif item.item_type == 'lab' %}
+                                        Laboratorium
+                                    {% elif item.item_type == 'radiology' %}
+                                        Radiologi
+                                    {% elif item.item_type == 'room' %}
+                                        Kamar
+                                    {% else %}
+                                        Lainnya
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(item.unit_price) }}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(item.total) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">Tidak ada item tagihan</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <th colspan="5" class="text-end">Subtotal</th>
+                                <th class="text-end">{{ "{:,.0f}".format(bill.total_amount) }}</th>
+                            </tr>
+                            {% if bill.insurance_covered > 0 %}
+                            <tr>
+                                <th colspan="5" class="text-end">Ditanggung Asuransi</th>
+                                <td class="text-end">{{ "{:,.0f}".format(bill.insurance_covered) }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-primary">
+                                <th colspan="5" class="text-end">Total Tagihan Pasien</th>
+                                <th class="text-end">{{ "{:,.0f}".format(bill.patient_responsibility) }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                {% if bill.payments %}
+                <h6 class="mt-4 mb-3">Riwayat Pembayaran</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">No.</th>
+                                <th width="20%">Tanggal</th>
+                                <th width="20%">Metode</th>
+                                <th width="40%">Keterangan</th>
+                                <th width="15%">Jumlah (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in bill.payments %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ payment.date }}</td>
+                                <td>
+                                    {% if payment.method == 'cash' %}
+                                        Tunai
+                                    {% elif payment.method == 'debit' %}
+                                        Kartu Debit
+                                    {% elif payment.method == 'credit' %}
+                                        Kartu Kredit
+                                    {% elif payment.method == 'insurance' %}
+                                        Asuransi
+                                    {% elif payment.method == 'transfer' %}
+                                        Transfer Bank
+                                    {% else %}
+                                        {{ payment.method }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ payment.notes }}</td>
+                                <td class="text-end">{{ "{:,.0f}".format(payment.amount) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-success">
+                                <th colspan="4" class="text-end">Total Pembayaran</th>
+                                <th class="text-end">{{ "{:,.0f}".format(bill.total_paid) }}</th>
+                            </tr>
+                            <tr class="table-warning">
+                                <th colspan="4" class="text-end">Sisa Tagihan</th>
+                                <th class="text-end">{{ "{:,.0f}".format(bill.balance) }}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% endif %}
+
+                {% if bill.notes %}
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Catatan</h6>
+                    </div>
+                    <div class="card-body">
+                        {{ bill.notes }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Print functionality
+        document.getElementById('printBill').addEventListener('click', function() {
+            window.print();
+        });
+    });
+</script>
+{% endblock %}
