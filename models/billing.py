@@ -7,7 +7,11 @@ class BillingRecord:
     def __init__(self, id=None, patient_id=None, visit_id=None, visit_type=None, 
                  items=None, total_amount=0, insurance_covered=0, patient_responsibility=0, 
                  status=None, issued_date=None, due_date=None, paid_date=None, 
-                 payment_method=None, notes=None, created_at=None, **kwargs):
+                 payment_method=None, notes=None, created_at=None, invoice_number=None,
+                 payments=None, **kwargs):
+        """Initialize billing record"""
+        current_year = datetime.now().year
+        current_month = datetime.now().month
         self.id = id or str(uuid.uuid4())
         self.patient_id = patient_id
         self.visit_id = visit_id  # ID of appointment or medical record
@@ -52,16 +56,50 @@ class BillingRecord:
         else:
             self.patient_responsibility = self.total_amount
     
-    def record_payment(self, amount, method):
+    def record_payment(self, amount, method, notes=None):
         """Record a payment for this bill"""
-        if not self.paid_date and amount >= self.patient_responsibility:
+        if not hasattr(self, 'payments'):
+            self.payments = []
+            
+        payment = {
+            'date': datetime.now().isoformat(),
+            'amount': amount,
+            'method': method,
+            'notes': notes
+        }
+        
+        self.payments.append(payment)
+        
+        # Calculate total paid
+        total_paid = sum(p['amount'] for p in self.payments)
+        self.total_paid = total_paid
+        self.balance = self.patient_responsibility - total_paid
+        
+        # Update status
+        if self.balance <= 0:
             self.status = "paid"
             self.paid_date = datetime.now().isoformat()
-        elif amount > 0:
-            self.status = "partially paid"
+        elif total_paid > 0:
+            self.status = "partial"
             
         self.payment_method = method
     
+    def generate_invoice_number(self):
+        """Generate unique invoice number"""
+        timestamp = datetime.now()
+        return f"INV/{timestamp.year}/{timestamp.month:02d}/{self.id[:8]}"
+        
+    def is_overdue(self):
+        """Check if bill is overdue"""
+        if not self.due_date:
+            return False
+        due_date = datetime.fromisoformat(self.due_date.replace('Z', '+00:00'))
+        return datetime.now() > due_date and self.status not in ['paid', 'cancelled']
+    
     def to_dict(self):
         """Convert billing record object to dictionary"""
-        return self.__dict__
+        data = self.__dict__
+        if not self.invoice_number:
+            self.invoice_number = self.generate_invoice_number()
+            data['invoice_number'] = self.invoice_number
+        return data
