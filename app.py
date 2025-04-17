@@ -23,6 +23,7 @@ except ImportError:
 
 # Import models and routes after app is initialized
 from models.data_store import DataStore
+from models.bpjs import BPJSCredential, BPJSApiLog, BPJSVerificationLog, BPJSReferral, BPJSSEP, BPJSClaim
 from routes.main_routes import main_bp
 from routes.api_routes import api_bp
 
