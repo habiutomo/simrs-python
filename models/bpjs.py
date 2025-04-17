@@ -266,3 +266,27 @@ class BPJSApiLog(db.Model):
             'response_message': self.response_message,
             'execution_time': self.execution_time
         }
+from datetime import datetime
+from app import db
+
+class BPJSCredential(db.Model):
+    """BPJS API Credentials"""
+    id = db.Column(db.Integer, primary_key=True)
+    cons_id = db.Column(db.String(50), nullable=False)
+    secret_key = db.Column(db.String(100), nullable=False) 
+    user_key = db.Column(db.String(100), nullable=False)
+    service_name = db.Column(db.String(50))  # vclaim, aplicare, etc
+    environment = db.Column(db.String(20))  # development/production
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class BPJSApiLog(db.Model):
+    """BPJS API Request/Response Logs"""
+    id = db.Column(db.Integer, primary_key=True)
+    request_timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    endpoint = db.Column(db.String(100))
+    request_data = db.Column(db.JSON)
+    response_data = db.Column(db.JSON)
+    response_code = db.Column(db.String(10))
+    is_success = db.Column(db.Boolean)

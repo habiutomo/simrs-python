@@ -3,10 +3,15 @@ import logging
 from flask import Flask, session, request, g
 from datetime import datetime
 import json
+from flask_sqlalchemy import SQLAlchemy
 
 # Initialize Flask application
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "simrs-development-key")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///simrs.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
 
 # Setup Babel for internationalization
 try:
@@ -31,11 +36,11 @@ data_store = DataStore()
 @app.before_request
 def before_request():
     g.data_store = data_store
-    
+
     # Initialize data store if not already done
     if not g.data_store.is_initialized():
         g.data_store.initialize()
-    
+
     # Log activity
     if request.endpoint and not request.endpoint.startswith('static'):
         g.data_store.log_activity({
