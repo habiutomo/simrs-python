@@ -4,7 +4,7 @@ SIMRS adalah aplikasi berbasis web untuk mengelola berbagai aspek operasional ru
 
 ![image](1.png)
 ![image](2.png)
-
+![image](3.png)
 
 ## Fitur Utama
 
