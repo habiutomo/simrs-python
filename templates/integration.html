@@ -1,3 +1,4 @@
+
 {% extends "index.html" %}
 
 {% block page_title %}
@@ -51,105 +52,6 @@
                         </div>
                     </div>
 
-                    <!-- Payment Gateway Integration -->
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0 me-3">
-                                        <img src="{{ url_for('static', filename='img/midtrans-logo.png') }}" alt="Midtrans" width="60" class="rounded"
-                                             onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=Midtrans'">
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-0">Midtrans</h5>
-                                        <p class="text-muted small mb-0">Payment Gateway</p>
-                                    </div>
-                                </div>
-                                <p class="card-text flex-fill">Integrasi dengan Midtrans untuk pembayaran online, mendukung berbagai metode pembayaran seperti kartu kredit, e-wallet, dan transfer bank.</p>
-                                <div class="d-grid">
-                                    <a href="#" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Laboratorium Information System Integration -->
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-flask"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-0">Sistem Lab</h5>
-                                        <p class="text-muted small mb-0">Laboratorium Information System</p>
-                                    </div>
-                                </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem laboratorium untuk mengirim permintaan pemeriksaan dan menerima hasil pemeriksaan secara otomatis.</p>
-                                <div class="d-grid">
-                                    <a href="#" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Radiology Information System Integration -->
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-x-ray"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-0">Sistem Radiologi</h5>
-                                        <p class="text-muted small mb-0">Radiology Information System</p>
-                                    </div>
-                                </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem radiologi (RIS) dan PACS untuk mengelola pemeriksaan pencitraan dan hasil pembacaan radiologi.</p>
-                                <div class="d-grid">
-                                    <a href="#" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Apotek Information System Integration -->
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-pills"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-0">Sistem Apotek</h5>
-                                        <p class="text-muted small mb-0">Pharmacy Information System</p>
-                                    </div>
-                                </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem apotek untuk manajemen obat, resep elektronik, dan pengelolaan persediaan.</p>
-                                <div class="d-grid">
-                                    <a href="#" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- E-Reporting Integration -->
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
@@ -162,10 +64,110 @@
                                     </div>
                                     <div>
                                         <h5 class="card-title mb-0">E-Reporting</h5>
-                                        <p class="text-muted small mb-0">Pelaporan ke Dinas Kesehatan</p>
+                                        <p class="text-muted small mb-0">Pelaporan Regulasi RL</p>
                                     </div>
                                 </div>
                                 <p class="card-text flex-fill">Integrasi dengan sistem pelaporan elektronik Dinas Kesehatan dan Kementerian Kesehatan untuk pelaporan wajib rumah sakit.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('main_bp.reports') }}" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lab Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-flask"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Lab Information System</h5>
+                                        <p class="text-muted small mb-0">Integrasi LIS</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem laboratorium untuk mengirim permintaan pemeriksaan dan menerima hasil pemeriksaan secara otomatis.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('main_bp.laboratory') }}" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radiology Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-x-ray"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Radiology Information</h5>
+                                        <p class="text-muted small mb-0">Integrasi RIS/PACS</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem radiologi (RIS) dan PACS untuk mengelola pemeriksaan pencitraan dan hasil pembacaan radiologi.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('main_bp.radiology') }}" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pharmacy Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-pills"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Pharmacy System</h5>
+                                        <p class="text-muted small mb-0">Integrasi Apotek</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem apotek untuk manajemen obat, resep elektronik, dan pengelolaan persediaan.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('main_bp.pharmacy') }}" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Gateway -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-credit-card"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Payment Gateway</h5>
+                                        <p class="text-muted small mb-0">Integrasi Pembayaran</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan payment gateway untuk pembayaran online melalui berbagai metode pembayaran.</p>
                                 <div class="d-grid">
                                     <a href="#" class="btn btn-primary">
                                         <i class="fas fa-cog"></i> Konfigurasi
@@ -174,11 +176,13 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Integration Activity Log -->
     <div class="col-lg-12 mb-4">
         <div class="card">
             <div class="card-header">
@@ -197,41 +201,21 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for log in api_logs %}
                             <tr>
-                                <td>2025-04-17 10:30:25</td>
-                                <td>BPJS</td>
-                                <td>/Peserta/nokartu</td>
-                                <td><span class="badge bg-success">Sukses</span></td>
-                                <td>Verifikasi peserta berhasil</td>
+                                <td>{{ log.request_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                <td>{{ log.service_type }}</td>
+                                <td>{{ log.endpoint }}</td>
+                                <td>
+                                    {% if log.is_success %}
+                                    <span class="badge bg-success">Sukses</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Gagal</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.response_message }}</td>
                             </tr>
-                            <tr>
-                                <td>2025-04-17 09:15:10</td>
-                                <td>Midtrans</td>
-                                <td>/snap/transaction</td>
-                                <td><span class="badge bg-success">Sukses</span></td>
-                                <td>Pembayaran tagihan BIL-2025041705 berhasil dibuat</td>
-                            </tr>
-                            <tr>
-                                <td>2025-04-17 08:45:32</td>
-                                <td>BPJS</td>
-                                <td>/SEP/2.0/insert</td>
-                                <td><span class="badge bg-danger">Gagal</span></td>
-                                <td>Response time out</td>
-                            </tr>
-                            <tr>
-                                <td>2025-04-16 15:20:15</td>
-                                <td>Midtrans</td>
-                                <td>/notification/status</td>
-                                <td><span class="badge bg-success">Sukses</span></td>
-                                <td>Notifikasi pembayaran diterima</td>
-                            </tr>
-                            <tr>
-                                <td>2025-04-16 14:05:22</td>
-                                <td>BPJS</td>
-                                <td>/Rujukan/Peserta</td>
-                                <td><span class="badge bg-success">Sukses</span></td>
-                                <td>Data rujukan berhasil diambil</td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

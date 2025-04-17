@@ -813,7 +813,10 @@ def api_analytics_chart():
 @main_bp.route('/integration')
 def integration():
     """Display the system integration page"""
-    return render_template('integration.html')
+    # Get recent API logs
+    api_logs = BPJSApiLog.query.order_by(BPJSApiLog.request_timestamp.desc()).limit(10).all()
+    
+    return render_template('integration.html', api_logs=api_logs)
 
 @main_bp.route('/integration/bpjs', methods=['GET', 'POST'])
 def integration_bpjs():
