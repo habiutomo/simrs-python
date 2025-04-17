@@ -1,0 +1,161 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h5 class="text-muted">Ringkasan keseluruhan operasional rumah sakit</h5>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Total Pasien</h6>
+                            <h2 class="card-title">{{ total_patients }}</h2>
+                        </div>
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Janji Temu Hari Ini</h6>
+                            <h2 class="card-title">{{ appointments_today }}</h2>
+                        </div>
+                        <div class="stat-icon text-info">
+                            <i class="fas fa-calendar-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Rawat Inap</h6>
+                            <h2 class="card-title">{{ inpatient_count }}</h2>
+                        </div>
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-bed fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2 text-muted">Dokter Bertugas</h6>
+                            <h2 class="card-title">{{ doctors_on_duty }}</h2>
+                        </div>
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-user-md fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Activity -->
+    <div class="row">
+        <!-- Departmental visits chart -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Kunjungan per Departemen</h5>
+                    <p class="card-subtitle text-muted">Jumlah kunjungan dalam 30 hari terakhir</p>
+                </div>
+                <div class="card-body">
+                    <canvas id="departmentVisitsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Aktivitas Terkini</h5>
+                    <p class="card-subtitle text-muted">Aktivitas sistem dalam 24 jam terakhir</p>
+                </div>
+                <div class="card-body">
+                    <div class="activity-feed">
+                        {% for activity in activities %}
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                {% if activity.action == 'Patient Registration' %}
+                                <div class="activity-icon bg-success">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                {% elif activity.action == 'Medical Record Created' %}
+                                <div class="activity-icon bg-primary">
+                                    <i class="fas fa-file-medical"></i>
+                                </div>
+                                {% elif activity.action == 'Appointment Scheduled' %}
+                                <div class="activity-icon bg-info">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </div>
+                                {% elif activity.action == 'Payment Recorded' %}
+                                <div class="activity-icon bg-warning">
+                                    <i class="fas fa-money-bill"></i>
+                                </div>
+                                {% else %}
+                                <div class="activity-icon bg-secondary">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                                {% endif %}
+                                <div class="activity-text">
+                                    <p class="mb-0">{{ activity.details }}</p>
+                                    <small class="text-muted">{{ activity.timestamp|replace("T", " ")|truncate(16, True, "") }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/modules/dashboard.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Prepare data for department visits chart
+        const departments = [];
+        const visitCounts = [];
+        
+        {% for dept_id, visits in department_visits.items() %}
+            {% if dept_id in departments %}
+                departments.push("{{ departments[dept_id] }}");
+                visitCounts.push({{ visits }});
+            {% endif %}
+        {% endfor %}
+        
+        createDepartmentVisitsChart('departmentVisitsChart', departments, visitCounts);
+    });
+</script>
+{% endblock %}

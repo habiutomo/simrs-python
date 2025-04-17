@@ -1,0 +1,787 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">Laboratorium</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Pending Lab Requests Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Permintaan Tes Lab</h5>
+                <div>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-secondary active">Semua</button>
+                        <button type="button" class="btn btn-outline-secondary">Prioritas</button>
+                        <button type="button" class="btn btn-outline-secondary">Rawat Inap</button>
+                        <button type="button" class="btn btn-outline-secondary">Rawat Jalan</button>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLabRequestModal">
+                        <i class="fas fa-plus"></i> Permintaan Baru
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchLabRequest" placeholder="Cari permintaan lab berdasarkan nama pasien, dokter, atau jenis tes...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="labRequestTable">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Pasien</th>
+                                <th>Dokter</th>
+                                <th>Jenis Tes</th>
+                                <th>Prioritas</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in lab_requests.values() %}
+                            <tr>
+                                <td>
+                                    {% if request.requested_at %}
+                                        {{ request.requested_at|replace("T", " ")|truncate(16, True, "") }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ request.patient_name }}</td>
+                                <td>Dr. {{ request.doctor_name if request.doctor_name else "Unknown" }}</td>
+                                <td>
+                                    {% for test in request.tests %}
+                                        <span class="badge bg-info">{{ test.name }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if request.priority == "urgent" %}
+                                        <span class="badge bg-danger">Urgent</span>
+                                    {% elif request.priority == "high" %}
+                                        <span class="badge bg-warning">Tinggi</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Normal</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if request.status == "completed" %}
+                                        <span class="badge bg-success">Selesai</span>
+                                    {% elif request.status == "in-progress" %}
+                                        <span class="badge bg-info">Dalam Proses</span>
+                                    {% elif request.status == "pending" %}
+                                        <span class="badge bg-warning">Menunggu</span>
+                                    {% elif request.status == "cancelled" %}
+                                        <span class="badge bg-danger">Dibatalkan</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary process-lab-btn" 
+                                                data-id="{{ request.id }}" title="Proses Tes">
+                                            <i class="fas fa-flask"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <!-- Sample data for display -->
+                            <tr>
+                                <td>2023-06-15 09:30</td>
+                                <td>Ahmad Hidayat</td>
+                                <td>Dr. Sutono</td>
+                                <td>
+                                    <span class="badge bg-info">Darah Lengkap</span>
+                                    <span class="badge bg-info">Elektrolit</span>
+                                </td>
+                                <td><span class="badge bg-warning">Tinggi</span></td>
+                                <td><span class="badge bg-warning">Menunggu</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary process-lab-btn" 
+                                                data-id="1" title="Proses Tes">
+                                            <i class="fas fa-flask"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2023-06-15 10:15</td>
+                                <td>Budi Santoso</td>
+                                <td>Dr. Ani Wijaya</td>
+                                <td>
+                                    <span class="badge bg-info">Fungsi Ginjal</span>
+                                </td>
+                                <td><span class="badge bg-secondary">Normal</span></td>
+                                <td><span class="badge bg-info">Dalam Proses</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary process-lab-btn" 
+                                                data-id="2" title="Proses Tes">
+                                            <i class="fas fa-flask"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2023-06-15 08:45</td>
+                                <td>Citra Dewi</td>
+                                <td>Dr. Sutono</td>
+                                <td>
+                                    <span class="badge bg-info">Gula Darah</span>
+                                    <span class="badge bg-info">HbA1c</span>
+                                </td>
+                                <td><span class="badge bg-danger">Urgent</span></td>
+                                <td><span class="badge bg-warning">Menunggu</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary process-lab-btn" 
+                                                data-id="3" title="Proses Tes">
+                                            <i class="fas fa-flask"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Results Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title">Hasil Lab Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Pasien</th>
+                                <th>Tes</th>
+                                <th>Hasil</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in lab_results %}
+                            <tr>
+                                <td>
+                                    {% if result.recorded_at %}
+                                        {{ result.recorded_at|replace("T", " ")|truncate(16, True, "") }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ result.patient_name }}</td>
+                                <td>{{ result.test_name }}</td>
+                                <td>{{ result.result }}</td>
+                                <td>
+                                    {% if result.reference_range %}
+                                        {% set value = result.result|float %}
+                                        {% set range = result.reference_range.split('-') %}
+                                        {% set min_value = range[0]|float %}
+                                        {% set max_value = range[1]|float %}
+                                        {% if value < min_value or value > max_value %}
+                                            <span class="badge bg-danger">Di luar Rentang</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Normal</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <!-- Sample data for display -->
+                            <tr>
+                                <td>2023-06-15 11:30</td>
+                                <td>Dewi Sartika</td>
+                                <td>Darah Lengkap</td>
+                                <td>Hemoglobin: 12.5 g/dL</td>
+                                <td><span class="badge bg-success">Normal</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2023-06-15 10:45</td>
+                                <td>Eko Prasetyo</td>
+                                <td>Gula Darah</td>
+                                <td>160 mg/dL</td>
+                                <td><span class="badge bg-danger">Di luar Rentang</span></td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Tests Categories Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Kategori Tes</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="testCategoriesAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingHematology">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHematology" aria-expanded="true" aria-controls="collapseHematology">
+                                Hematologi
+                            </button>
+                        </h2>
+                        <div id="collapseHematology" class="accordion-collapse collapse show" aria-labelledby="headingHematology" data-bs-parent="#testCategoriesAccordion">
+                            <div class="accordion-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Darah Lengkap (CBC)
+                                        <span class="badge bg-primary rounded-pill">500</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Hemoglobin
+                                        <span class="badge bg-primary rounded-pill">350</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Hematokrit
+                                        <span class="badge bg-primary rounded-pill">200</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingBiochemistry">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBiochemistry" aria-expanded="false" aria-controls="collapseBiochemistry">
+                                Biokimia
+                            </button>
+                        </h2>
+                        <div id="collapseBiochemistry" class="accordion-collapse collapse" aria-labelledby="headingBiochemistry" data-bs-parent="#testCategoriesAccordion">
+                            <div class="accordion-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Gula Darah
+                                        <span class="badge bg-primary rounded-pill">450</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Profil Lipid
+                                        <span class="badge bg-primary rounded-pill">300</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Fungsi Hati
+                                        <span class="badge bg-primary rounded-pill">250</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Fungsi Ginjal
+                                        <span class="badge bg-primary rounded-pill">280</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingMicrobiology">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMicrobiology" aria-expanded="false" aria-controls="collapseMicrobiology">
+                                Mikrobiologi
+                            </button>
+                        </h2>
+                        <div id="collapseMicrobiology" class="accordion-collapse collapse" aria-labelledby="headingMicrobiology" data-bs-parent="#testCategoriesAccordion">
+                            <div class="accordion-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Kultur Darah
+                                        <span class="badge bg-primary rounded-pill">120</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Kultur Urin
+                                        <span class="badge bg-primary rounded-pill">180</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Tes Sensitivitas Antibiotik
+                                        <span class="badge bg-primary rounded-pill">90</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingUrinalysis">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUrinalysis" aria-expanded="false" aria-controls="collapseUrinalysis">
+                                Urinalisis
+                            </button>
+                        </h2>
+                        <div id="collapseUrinalysis" class="accordion-collapse collapse" aria-labelledby="headingUrinalysis" data-bs-parent="#testCategoriesAccordion">
+                            <div class="accordion-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Urinalisis Lengkap
+                                        <span class="badge bg-primary rounded-pill">320</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Mikroskopik Urin
+                                        <span class="badge bg-primary rounded-pill">150</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lab Stats Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Statistik Lab</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>Tes Selesai Hari Ini</h6>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
+                    </div>
+                    <small>26 dari 40 tes</small>
+                </div>
+                <div class="mb-4">
+                    <h6>Waktu Tunggu Rata-rata</h6>
+                    <h3>2.4 <small class="text-muted">jam</small></h3>
+                </div>
+                <div>
+                    <h6>Tes per Kategori Hari Ini</h6>
+                    <canvas id="labCategoryChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Lab Request Modal -->
+<div class="modal fade" id="addLabRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Permintaan Lab Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="labRequestForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="request_patient_id" class="form-label">Pasien</label>
+                            <select class="form-select" id="request_patient_id" name="patient_id" required>
+                                <option value="">Pilih pasien...</option>
+                                <!-- Patient options would be populated from database -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="request_doctor_id" class="form-label">Dokter</label>
+                            <select class="form-select" id="request_doctor_id" name="doctor_id" required>
+                                <option value="">Pilih dokter...</option>
+                                <!-- Doctor options would be populated from database -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="request_date" class="form-label">Tanggal Permintaan</label>
+                            <input type="date" class="form-control" id="request_date" name="request_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="request_priority" class="form-label">Prioritas</label>
+                            <select class="form-select" id="request_priority" name="priority">
+                                <option value="normal">Normal</option>
+                                <option value="high">Tinggi</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Pilih Tes</label>
+                        <div class="row mb-2">
+                            <div class="col-md-6">
+                                <label for="testCategory" class="form-label">Kategori</label>
+                                <select class="form-select" id="testCategory">
+                                    <option value="">Pilih kategori...</option>
+                                    <option value="hematology">Hematologi</option>
+                                    <option value="biochemistry">Biokimia</option>
+                                    <option value="microbiology">Mikrobiologi</option>
+                                    <option value="urine">Urinalisis</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="testName" class="form-label">Tes</label>
+                                <div class="input-group">
+                                    <select class="form-select" id="testName" disabled>
+                                        <option value="">Pilih tes...</option>
+                                    </select>
+                                    <button class="btn btn-outline-primary" type="button" onclick="addLabTest()">Tambah</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="labTestContainer" class="mt-3">
+                            <!-- Test items will be added here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="request_notes" class="form-label">Catatan Klinis / Indikasi</label>
+                        <textarea class="form-control" id="request_notes" name="notes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="specimen_type" class="form-label">Jenis Spesimen</label>
+                        <select class="form-select" id="specimen_type" name="specimen_type">
+                            <option value="">Pilih jenis spesimen...</option>
+                            <option value="blood">Darah</option>
+                            <option value="urine">Urin</option>
+                            <option value="stool">Feses</option>
+                            <option value="sputum">Sputum</option>
+                            <option value="tissue">Jaringan</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveLabRequestBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enter Lab Result Modal -->
+<div class="modal fade" id="labResultModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Hasil Lab</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="labResultForm">
+                    <input type="hidden" name="request_id" id="result_request_id">
+                    
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Pasien:</strong> <span id="result_patient_name">Ahmad Hidayat</span></p>
+                                <p class="mb-1"><strong>No. RM:</strong> <span id="result_patient_mrn">RM-2023060001</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Dokter:</strong> <span id="result_doctor_name">Dr. Sutono</span></p>
+                                <p class="mb-1"><strong>Tgl Permintaan:</strong> <span id="result_request_date">15 Juni 2023</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="result_date" class="form-label">Tanggal Hasil</label>
+                        <input type="date" class="form-control" id="result_date" name="result_date" required>
+                    </div>
+                    
+                    <h6 class="mt-4 mb-2">Hasil Tes</h6>
+                    <div id="testResultsContainer">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Darah Lengkap (CBC)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Hemoglobin</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_hgb" placeholder="Nilai">
+                                            <span class="input-group-text">g/dL</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 12.0-16.0 g/dL</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Hematokrit</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_hct" placeholder="Nilai">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 36-48%</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Eritrosit</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_rbc" placeholder="Nilai">
+                                            <span class="input-group-text">juta/μL</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 4.2-5.8 juta/μL</small>
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Leukosit</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_wbc" placeholder="Nilai">
+                                            <span class="input-group-text">ribu/μL</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 4.0-10.0 ribu/μL</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Trombosit</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_plt" placeholder="Nilai">
+                                            <span class="input-group-text">ribu/μL</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 150-450 ribu/μL</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Elektrolit</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Natrium (Na)</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_na" placeholder="Nilai">
+                                            <span class="input-group-text">mEq/L</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 135-145 mEq/L</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Kalium (K)</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_k" placeholder="Nilai">
+                                            <span class="input-group-text">mEq/L</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 3.5-5.0 mEq/L</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Klorida (Cl)</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" name="result_cl" placeholder="Nilai">
+                                            <span class="input-group-text">mEq/L</span>
+                                        </div>
+                                        <small class="text-muted">Rentang: 95-105 mEq/L</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="lab_notes" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="lab_notes" name="notes" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="performed_by" class="form-label">Dilakukan Oleh</label>
+                            <input type="text" class="form-control" id="performed_by" name="performed_by" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="validated_by" class="form-label">Divalidasi Oleh</label>
+                            <input type="text" class="form-control" id="validated_by" name="validated_by">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveLabResultBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/laboratory.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize lab category chart
+        const ctx = document.getElementById('labCategoryChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hematologi', 'Biokimia', 'Mikrobiologi', 'Urinalisis'],
+                    datasets: [{
+                        data: [12, 8, 3, 5],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize process lab buttons
+        document.querySelectorAll('.process-lab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const requestId = this.getAttribute('data-id');
+                const labResultModal = new bootstrap.Modal(document.getElementById('labResultModal'));
+                document.getElementById('result_request_id').value = requestId;
+                labResultModal.show();
+            });
+        });
+        
+        // Set current date for result date
+        const resultDateInput = document.getElementById('result_date');
+        if (resultDateInput) {
+            resultDateInput.value = new Date().toISOString().split('T')[0];
+        }
+        
+        // Initialize test category dropdown
+        const testCategorySelect = document.getElementById('testCategory');
+        const testNameSelect = document.getElementById('testName');
+        
+        if (testCategorySelect && testNameSelect) {
+            testCategorySelect.addEventListener('change', function() {
+                const category = this.value;
+                testNameSelect.innerHTML = '<option value="">Pilih tes...</option>';
+                testNameSelect.disabled = !category;
+                
+                if (category) {
+                    // Sample data for dropdown options
+                    let tests = [];
+                    
+                    if (category === 'hematology') {
+                        tests = [
+                            { id: 'cbc', name: 'Darah Lengkap (CBC)' },
+                            { id: 'hgb', name: 'Hemoglobin' },
+                            { id: 'hct', name: 'Hematokrit' },
+                            { id: 'plt', name: 'Trombosit' }
+                        ];
+                    } else if (category === 'biochemistry') {
+                        tests = [
+                            { id: 'glu', name: 'Gula Darah' },
+                            { id: 'lip', name: 'Profil Lipid' },
+                            { id: 'liv', name: 'Fungsi Hati' },
+                            { id: 'kid', name: 'Fungsi Ginjal' }
+                        ];
+                    } else if (category === 'microbiology') {
+                        tests = [
+                            { id: 'bc', name: 'Kultur Darah' },
+                            { id: 'uc', name: 'Kultur Urin' },
+                            { id: 'ast', name: 'Tes Sensitivitas Antibiotik' }
+                        ];
+                    } else if (category === 'urine') {
+                        tests = [
+                            { id: 'ua', name: 'Urinalisis Lengkap' },
+                            { id: 'um', name: 'Mikroskopik Urin' }
+                        ];
+                    }
+                    
+                    tests.forEach(test => {
+                        const option = document.createElement('option');
+                        option.value = test.id;
+                        option.textContent = test.name;
+                        testNameSelect.appendChild(option);
+                    });
+                }
+            });
+        }
+    });
+    
+    // Function to add a lab test to the container
+    function addLabTest() {
+        const testSelect = document.getElementById('testName');
+        const labTestContainer = document.getElementById('labTestContainer');
+        
+        if (!testSelect || !labTestContainer) return;
+        
+        const testId = testSelect.value;
+        const testName = testSelect.options[testSelect.selectedIndex].text;
+        
+        if (!testId) {
+            alert('Silahkan pilih tes terlebih dahulu');
+            return;
+        }
+        
+        // Check if test is already added
+        if (labTestContainer.querySelector(`[data-test-id="${testId}"]`)) {
+            alert('Tes ini sudah ditambahkan');
+            return;
+        }
+        
+        // Create test item
+        const testItem = document.createElement('div');
+        testItem.className = 'lab-test-item d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded';
+        testItem.setAttribute('data-test-id', testId);
+        testItem.innerHTML = `
+            <div>
+                <i class="fas fa-flask me-2"></i> ${testName}
+                <input type="hidden" name="test_ids[]" value="${testId}">
+                <input type="hidden" name="test_names[]" value="${testName}">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-test-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        // Add remove functionality
+        const removeBtn = testItem.querySelector('.remove-test-btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                testItem.remove();
+            });
+        }
+        
+        labTestContainer.appendChild(testItem);
+        testSelect.value = '';
+    }
+</script>
+{% endblock %}

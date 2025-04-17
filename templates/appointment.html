@@ -1,0 +1,218 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    {% if action == "add" %}
+        Tambah Janji Temu
+    {% else %}
+        Jadwal & Appointment
+    {% endif %}
+</h1>
+{% endblock %}
+
+{% block content %}
+{% if action == "add" %}
+    <!-- Add appointment form -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Form Janji Temu</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('main_bp.add_appointment') }}" method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="patient_id" class="form-label">Pasien *</label>
+                        <select class="form-select" id="patient_id" name="patient_id" required>
+                            <option value="">Pilih pasien...</option>
+                            {% for patient in patients %}
+                                <option value="{{ patient.id }}" {% if request.args.get('patient_id') == patient.id %}selected{% endif %}>
+                                    {{ patient.name }} ({{ patient.medical_record_number }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="department_id" class="form-label">Departemen/Poli *</label>
+                        <select class="form-select" id="department_id" name="department_id" required>
+                            <option value="">Pilih departemen...</option>
+                            {% for department in departments %}
+                                <option value="{{ department.id }}">{{ department.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="doctor_id" class="form-label">Dokter *</label>
+                        <select class="form-select" id="doctor_id" name="doctor_id" required>
+                            <option value="">Pilih dokter...</option>
+                            {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">{{ doctor.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="reason" class="form-label">Alasan Kunjungan *</label>
+                        <input type="text" class="form-control" id="reason" name="reason" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="appointment_date" class="form-label">Tanggal Janji *</label>
+                        <input type="date" class="form-control" id="appointment_date" name="appointment_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="appointment_time" class="form-label">Waktu Janji *</label>
+                        <input type="time" class="form-control" id="appointment_time" name="appointment_time" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Catatan</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                </div>
+
+                <div class="text-end mt-4">
+                    <a href="{{ url_for('main_bp.appointment_list') }}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary">Simpan Janji Temu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% else %}
+    <!-- Appointment listing -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Jadwal Temu</h5>
+            <div>
+                <div class="btn-group me-2" role="group">
+                    <a href="{{ url_for('main_bp.appointment_list', date='today') }}" class="btn btn-outline-secondary {% if date_filter == 'today' %}active{% endif %}">
+                        Hari Ini
+                    </a>
+                    <a href="{{ url_for('main_bp.appointment_list', date='tomorrow') }}" class="btn btn-outline-secondary {% if date_filter == 'tomorrow' %}active{% endif %}">
+                        Besok
+                    </a>
+                    <a href="{{ url_for('main_bp.appointment_list', date='week') }}" class="btn btn-outline-secondary {% if date_filter == 'week' %}active{% endif %}">
+                        Minggu Ini
+                    </a>
+                </div>
+                <a href="{{ url_for('main_bp.add_appointment') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Tambah Janji Temu
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="filterDate" value="{{ date_filter if date_filter != 'today' and date_filter != 'tomorrow' and date_filter != 'week' else '' }}">
+                            <button class="btn btn-outline-secondary" type="button" id="applyDateFilter">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="appointmentTable">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Pasien</th>
+                            <th>Dokter</th>
+                            <th>Departemen</th>
+                            <th>Alasan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td>
+                                {% if appointment.appointment_date %}
+                                    {% if 'T' in appointment.appointment_date %}
+                                        {{ appointment.appointment_date.split('T')[0] }} {{ appointment.appointment_date.split('T')[1][:5] }}
+                                    {% else %}
+                                        {{ appointment.appointment_date }} {{ appointment.appointment_time }}
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>{{ patients.get(appointment.patient_id, "Unknown") }}</td>
+                            <td>{{ doctors.get(appointment.doctor_id, "Unknown") }}</td>
+                            <td>{{ departments.get(appointment.department_id, "Unknown") }}</td>
+                            <td>{{ appointment.reason }}</td>
+                            <td>
+                                {% if appointment.status == "scheduled" %}
+                                    <span class="badge bg-info">Terjadwal</span>
+                                {% elif appointment.status == "completed" %}
+                                    <span class="badge bg-success">Selesai</span>
+                                {% elif appointment.status == "cancelled" %}
+                                    <span class="badge bg-danger">Dibatalkan</span>
+                                {% elif appointment.status == "no-show" %}
+                                    <span class="badge bg-warning">Tidak Hadir</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="Mulai Pemeriksaan">
+                                        <i class="fas fa-stethoscope"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Batalkan">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/appointment.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Date filter handling
+        const filterDateInput = document.getElementById('filterDate');
+        const applyDateFilter = document.getElementById('applyDateFilter');
+        
+        if (applyDateFilter) {
+            applyDateFilter.addEventListener('click', function() {
+                const date = filterDateInput.value;
+                if (date) {
+                    window.location.href = "{{ url_for('main_bp.appointment_list') }}?date=" + date;
+                }
+            });
+        }
+        
+        // Doctor filtering based on department
+        const departmentSelect = document.getElementById('department_id');
+        const doctorSelect = document.getElementById('doctor_id');
+        
+        if (departmentSelect && doctorSelect) {
+            departmentSelect.addEventListener('change', function() {
+                // In a real application, this would fetch doctors by department
+                // For this demo, we'll just enable/disable the doctor field
+                if (departmentSelect.value) {
+                    doctorSelect.disabled = false;
+                } else {
+                    doctorSelect.disabled = true;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

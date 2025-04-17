@@ -1,0 +1,528 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">Manajemen Rawat Inap</h1>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Daftar Pasien Rawat Inap</h5>
+        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#admitPatientModal">
+            <i class="fas fa-plus"></i> Pasien Rawat Inap Baru
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInpatient" placeholder="Cari pasien berdasarkan nama, nomor kamar, atau dokter...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover" id="inpatientTable">
+                <thead>
+                    <tr>
+                        <th>Nomor RM</th>
+                        <th>Nama Pasien</th>
+                        <th>Ruangan/Bed</th>
+                        <th>Tanggal Masuk</th>
+                        <th>Dokter Penanggung Jawab</th>
+                        <th>Diagnosis</th>
+                        <th>Durasi</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inpatient in inpatients %}
+                    <tr>
+                        <td>{{ inpatient.medical_record_number }}</td>
+                        <td>{{ inpatient.name }}</td>
+                        <td>{{ inpatient.room }}</td>
+                        <td>{{ inpatient.admission_date|replace("T", " ")|truncate(10, True, "") }}</td>
+                        <td>{{ inpatient.doctor }}</td>
+                        <td>{{ inpatient.diagnosis }}</td>
+                        <td>
+                            {% if inpatient.admission_date %}
+                                {% set admission_date = inpatient.admission_date.split('T')[0]|string|replace("-", "/") %}
+                                {% set start_date = admission_date|strptime('%Y/%m/%d') %}
+                                {% set days = ((now - start_date).days) %}
+                                {{ days }} hari
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="#" class="btn btn-sm btn-outline-primary" title="Detail Pasien"
+                                   onclick="viewInpatientDetails('{{ inpatient.id }}')">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-success" title="Tambah Catatan Harian"
+                                   onclick="addDailyNote('{{ inpatient.id }}')">
+                                    <i class="fas fa-notes-medical"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-info" title="Update Tanda Vital"
+                                   onclick="updateVitals('{{ inpatient.id }}')">
+                                    <i class="fas fa-heartbeat"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-secondary" title="Pindah Ruangan"
+                                   onclick="showTransferModal('{{ inpatient.id }}')">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-warning" title="Pulang"
+                                   data-id="{{ inpatient.id }}" class="discharge-patient-btn"
+                                   onclick="dischargePatient('{{ inpatient.id }}')">
+                                    <i class="fas fa-door-open"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Ward Occupancy Overview Card -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title">Ringkasan Okupansi Ruangan</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h6 class="card-title text-primary">VIP</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">20%</div>
+                        </div>
+                        <small>2 dari 10 bed terisi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6 class="card-title text-success">Kelas I</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                        </div>
+                        <small>5 dari 10 bed terisi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h6 class="card-title text-warning">Kelas II</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 75%;" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                        </div>
+                        <small>9 dari 12 bed terisi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <h6 class="card-title text-danger">Kelas III</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">80%</div>
+                        </div>
+                        <small>16 dari 20 bed terisi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-info">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">ICU</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">60%</div>
+                        </div>
+                        <small>3 dari 5 bed terisi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-dark">
+                    <div class="card-body">
+                        <h6 class="card-title text-dark">Isolasi</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar bg-dark" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                        </div>
+                        <small>1 dari 4 bed terisi</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admit Patient Modal -->
+<div class="modal fade" id="admitPatientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pasien Rawat Inap Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="admitPatientForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="patient_id" class="form-label">Pasien</label>
+                            <select class="form-select" id="patient_id" name="patient_id" required>
+                                <option value="">Pilih pasien...</option>
+                                <!-- Patient options would be populated from database -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="doctor_id" class="form-label">Dokter Penanggung Jawab</label>
+                            <select class="form-select" id="doctor_id" name="doctor_id" required>
+                                <option value="">Pilih dokter...</option>
+                                <!-- Doctor options would be populated from database -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="admission_date" class="form-label">Tanggal Masuk</label>
+                            <input type="date" class="form-control" id="admission_date" name="admission_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="admission_time" class="form-label">Waktu Masuk</label>
+                            <input type="time" class="form-control" id="admission_time" name="admission_time" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="ward_id" class="form-label">Ruang Rawat</label>
+                            <select class="form-select" id="ward_id" name="ward_id" required>
+                                <option value="">Pilih ruangan...</option>
+                                <option value="vip">VIP</option>
+                                <option value="class1">Kelas I</option>
+                                <option value="class2">Kelas II</option>
+                                <option value="class3">Kelas III</option>
+                                <option value="icu">ICU</option>
+                                <option value="isolation">Isolasi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="room_id" class="form-label">Kamar</label>
+                            <select class="form-select" id="room_id" name="room_id" required disabled>
+                                <option value="">Pilih kamar...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="bed_id" class="form-label">Bed</label>
+                            <select class="form-select" id="bed_id" name="bed_id" required disabled>
+                                <option value="">Pilih bed...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="primary_diagnosis" class="form-label">Diagnosis Utama</label>
+                        <input type="text" class="form-control" id="primary_diagnosis" name="primary_diagnosis" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="admission_notes" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="admission_notes" name="admission_notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveAdmitPatientBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transfer Patient Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pindah Ruangan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="transferPatientForm">
+                    <input type="hidden" name="patient_id" id="transfer_patient_id">
+                    <div class="mb-3">
+                        <label for="transfer_ward_id" class="form-label">Ruang Rawat Baru</label>
+                        <select class="form-select" id="transfer_ward_id" name="ward_id" required>
+                            <option value="">Pilih ruangan...</option>
+                            <option value="vip">VIP</option>
+                            <option value="class1">Kelas I</option>
+                            <option value="class2">Kelas II</option>
+                            <option value="class3">Kelas III</option>
+                            <option value="icu">ICU</option>
+                            <option value="isolation">Isolasi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transfer_room_id" class="form-label">Kamar Baru</label>
+                        <select class="form-select" id="transfer_room_id" name="room_id" required disabled>
+                            <option value="">Pilih kamar...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transfer_bed_id" class="form-label">Bed Baru</label>
+                        <select class="form-select" id="transfer_bed_id" name="bed_id" required disabled>
+                            <option value="">Pilih bed...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="transfer_reason" class="form-label">Alasan Pindah</label>
+                        <textarea class="form-control" id="transfer_reason" name="reason" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveTransferBtn">Pindahkan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Note Modal -->
+<div class="modal fade" id="dailyNoteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Catatan Harian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="dailyNoteForm">
+                    <input type="hidden" name="patient_id" id="note_patient_id">
+                    <div class="mb-3">
+                        <label for="note_date" class="form-label">Tanggal</label>
+                        <input type="date" class="form-control" id="note_date" name="note_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="note_time" class="form-label">Waktu</label>
+                        <input type="time" class="form-control" id="note_time" name="note_time" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="soap_subjective" class="form-label">Subjektif (Keluhan)</label>
+                        <textarea class="form-control" id="soap_subjective" name="subjective" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="soap_objective" class="form-label">Objektif (Pemeriksaan)</label>
+                        <textarea class="form-control" id="soap_objective" name="objective" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="soap_assessment" class="form-label">Penilaian</label>
+                        <textarea class="form-control" id="soap_assessment" name="assessment" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="soap_plan" class="form-label">Rencana</label>
+                        <textarea class="form-control" id="soap_plan" name="plan" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="note_created_by" class="form-label">Dibuat Oleh</label>
+                        <input type="text" class="form-control" id="note_created_by" name="created_by" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveDailyNoteBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vitals Modal -->
+<div class="modal fade" id="vitalsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Tanda Vital</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vitalsForm">
+                    <input type="hidden" name="patient_id" id="vitals_patient_id">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="vitals_date" class="form-label">Tanggal</label>
+                            <input type="date" class="form-control" id="vitals_date" name="vitals_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="vitals_time" class="form-label">Waktu</label>
+                            <input type="time" class="form-control" id="vitals_time" name="vitals_time" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="blood_pressure" class="form-label">Tekanan Darah</label>
+                            <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" placeholder="120/80 mmHg">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="heart_rate" class="form-label">Detak Jantung</label>
+                            <input type="text" class="form-control" id="heart_rate" name="heart_rate" placeholder="80 bpm">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="temperature" class="form-label">Suhu</label>
+                            <input type="text" class="form-control" id="temperature" name="temperature" placeholder="36.5 °C">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="respiratory_rate" class="form-label">Laju Pernapasan</label>
+                            <input type="text" class="form-control" id="respiratory_rate" name="respiratory_rate" placeholder="16 rpm">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="oxygen_saturation" class="form-label">Saturasi Oksigen</label>
+                            <input type="text" class="form-control" id="oxygen_saturation" name="oxygen_saturation" placeholder="98%">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="pain_scale" class="form-label">Skala Nyeri (0-10)</label>
+                            <input type="number" class="form-control" id="pain_scale" name="pain_scale" min="0" max="10" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="vitals_notes" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="vitals_notes" name="vitals_notes" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="vitals_taken_by" class="form-label">Diambil Oleh</label>
+                        <input type="text" class="form-control" id="vitals_taken_by" name="taken_by" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveVitalsBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/inpatient.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize ward-room-bed cascading dropdowns
+        const wardSelect = document.getElementById('ward_id');
+        const roomSelect = document.getElementById('room_id');
+        const bedSelect = document.getElementById('bed_id');
+        
+        if (wardSelect) {
+            wardSelect.addEventListener('change', function() {
+                roomSelect.disabled = !this.value;
+                roomSelect.innerHTML = '<option value="">Pilih kamar...</option>';
+                bedSelect.innerHTML = '<option value="">Pilih bed...</option>';
+                bedSelect.disabled = true;
+                
+                if (this.value) {
+                    // Simulate loading rooms for the selected ward
+                    setTimeout(function() {
+                        for (let i = 1; i <= 5; i++) {
+                            const option = document.createElement('option');
+                            option.value = `room${i}`;
+                            option.textContent = `Kamar ${i}`;
+                            roomSelect.appendChild(option);
+                        }
+                    }, 300);
+                }
+            });
+        }
+        
+        if (roomSelect) {
+            roomSelect.addEventListener('change', function() {
+                bedSelect.disabled = !this.value;
+                bedSelect.innerHTML = '<option value="">Pilih bed...</option>';
+                
+                if (this.value) {
+                    // Simulate loading beds for the selected room
+                    setTimeout(function() {
+                        for (let i = 1; i <= 4; i++) {
+                            const option = document.createElement('option');
+                            option.value = `bed${i}`;
+                            option.textContent = `Bed ${i}`;
+                            bedSelect.appendChild(option);
+                        }
+                    }, 300);
+                }
+            });
+        }
+        
+        // Initialize transfer modal dropdowns
+        const transferWardSelect = document.getElementById('transfer_ward_id');
+        const transferRoomSelect = document.getElementById('transfer_room_id');
+        const transferBedSelect = document.getElementById('transfer_bed_id');
+        
+        if (transferWardSelect) {
+            transferWardSelect.addEventListener('change', function() {
+                transferRoomSelect.disabled = !this.value;
+                transferRoomSelect.innerHTML = '<option value="">Pilih kamar...</option>';
+                transferBedSelect.innerHTML = '<option value="">Pilih bed...</option>';
+                transferBedSelect.disabled = true;
+                
+                if (this.value) {
+                    // Simulate loading rooms for the selected ward
+                    setTimeout(function() {
+                        for (let i = 1; i <= 5; i++) {
+                            const option = document.createElement('option');
+                            option.value = `room${i}`;
+                            option.textContent = `Kamar ${i}`;
+                            transferRoomSelect.appendChild(option);
+                        }
+                    }, 300);
+                }
+            });
+        }
+        
+        if (transferRoomSelect) {
+            transferRoomSelect.addEventListener('change', function() {
+                transferBedSelect.disabled = !this.value;
+                transferBedSelect.innerHTML = '<option value="">Pilih bed...</option>';
+                
+                if (this.value) {
+                    // Simulate loading beds for the selected room
+                    setTimeout(function() {
+                        for (let i = 1; i <= 4; i++) {
+                            const option = document.createElement('option');
+                            option.value = `bed${i}`;
+                            option.textContent = `Bed ${i}`;
+                            transferBedSelect.appendChild(option);
+                        }
+                    }, 300);
+                }
+            });
+        }
+        
+        // Set current date/time for all date fields
+        const today = new Date();
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        const timeInputs = document.querySelectorAll('input[type="time"]');
+        
+        dateInputs.forEach(input => {
+            if (!input.value) {
+                input.value = today.toISOString().split('T')[0];
+            }
+        });
+        
+        timeInputs.forEach(input => {
+            if (!input.value) {
+                input.value = today.toTimeString().slice(0, 5);
+            }
+        });
+    });
+</script>
+{% endblock %}

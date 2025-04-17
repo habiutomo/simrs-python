@@ -1,0 +1,436 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    {% if action == "add" %}
+        Tambah Pasien Baru
+    {% elif action == "view" %}
+        Detail Pasien
+    {% else %}
+        Manajemen Pasien
+    {% endif %}
+</h1>
+{% endblock %}
+
+{% block content %}
+{% if action == "add" %}
+    <!-- Add patient form -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Form Pasien Baru</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('main_bp.add_patient') }}" method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Nama Lengkap *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="gender" class="form-label">Jenis Kelamin *</label>
+                        <select class="form-select" id="gender" name="gender" required>
+                            <option value="">Pilih...</option>
+                            <option value="male">Laki-laki</option>
+                            <option value="female">Perempuan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="birth_date" class="form-label">Tanggal Lahir *</label>
+                        <input type="date" class="form-control" id="birth_date" name="birth_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="blood_type" class="form-label">Golongan Darah</label>
+                        <select class="form-select" id="blood_type" name="blood_type">
+                            <option value="">Pilih...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="AB">AB</option>
+                            <option value="O">O</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">Nomor Telepon *</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_number" class="form-label">Nomor KTP</label>
+                        <input type="text" class="form-control" id="id_number" name="id_number">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Alamat *</label>
+                    <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="insurance_provider" class="form-label">Penyedia Asuransi</label>
+                        <select class="form-select" id="insurance_provider" name="insurance_provider">
+                            <option value="">Tidak Ada</option>
+                            <option value="BPJS">BPJS Kesehatan</option>
+                            <option value="private">Asuransi Swasta</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="insurance_number" class="form-label">Nomor Asuransi</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="insurance_number" name="insurance_number">
+                            <button class="btn btn-outline-secondary" type="button" id="verifyBPJS">Verifikasi</button>
+                        </div>
+                        <div id="bpjsStatus" class="form-text"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="allergies" class="form-label">Alergi (pisahkan dengan koma)</label>
+                    <input type="text" class="form-control" id="allergies" name="allergies" placeholder="Contoh: penisilin, kacang, seafood">
+                </div>
+
+                <h5 class="mt-4 mb-3">Kontak Darurat</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="emergency_name" class="form-label">Nama Kontak Darurat</label>
+                        <input type="text" class="form-control" id="emergency_name" name="emergency_name">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="emergency_phone" class="form-label">Telepon Kontak Darurat</label>
+                        <input type="tel" class="form-control" id="emergency_phone" name="emergency_phone">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="emergency_relationship" class="form-label">Hubungan</label>
+                        <input type="text" class="form-control" id="emergency_relationship" name="emergency_relationship">
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <a href="{{ url_for('main_bp.patient_list') }}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary">Simpan Data Pasien</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% elif action == "view" %}
+    <!-- Patient details view -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Informasi Pasien</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <img src="https://ui-avatars.com/api/?name={{ patient.name }}&size=128&background=random" alt="{{ patient.name }}" class="rounded-circle patient-avatar">
+                        <h4 class="mt-2">{{ patient.name }}</h4>
+                        <p class="text-muted">
+                            {{ "Laki-laki" if patient.gender == "male" else "Perempuan" }} | 
+                            {% if patient.birth_date %}
+                                {{ ((now - patient.birth_date|string|replace("T", " ")|strptime('%Y-%m-%d')).days / 365)|int }} tahun
+                            {% endif %}
+                        </p>
+                        <p class="mb-0">
+                            <span class="badge bg-primary">{{ patient.medical_record_number }}</span>
+                        </p>
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Telepon</dt>
+                        <dd class="col-sm-8">{{ patient.phone }}</dd>
+                        
+                        <dt class="col-sm-4">Alamat</dt>
+                        <dd class="col-sm-8">{{ patient.address }}</dd>
+                        
+                        <dt class="col-sm-4">Gol. Darah</dt>
+                        <dd class="col-sm-8">{{ patient.blood_type or "-" }}</dd>
+                        
+                        <dt class="col-sm-4">Alergi</dt>
+                        <dd class="col-sm-8">
+                            {% if patient.allergies %}
+                                {% for allergy in patient.allergies %}
+                                    <span class="badge bg-danger">{{ allergy }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted">Tidak ada alergi yang tercatat</span>
+                            {% endif %}
+                        </dd>
+                        
+                        <dt class="col-sm-4">Asuransi</dt>
+                        <dd class="col-sm-8">
+                            {% if patient.insurance_provider %}
+                                {{ patient.insurance_provider }} ({{ patient.insurance_number }})
+                            {% else %}
+                                <span class="text-muted">Tidak ada</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+
+                    <h6 class="mt-3">Kontak Darurat</h6>
+                    {% if patient.emergency_contact and patient.emergency_contact.name %}
+                        <p>
+                            {{ patient.emergency_contact.name }} ({{ patient.emergency_contact.relationship }})<br>
+                            {{ patient.emergency_contact.phone }}
+                        </p>
+                    {% else %}
+                        <p class="text-muted">Tidak ada kontak darurat yang tercatat</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main_bp.patient_list') }}" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Kembali
+                        </a>
+                        <a href="#" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> Edit Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Rekam Medis</h5>
+                    <a href="{{ url_for('main_bp.add_medical_record') }}?patient_id={{ patient.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Tambah Rekam Medis
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if medical_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Dokter</th>
+                                        <th>Diagnosis</th>
+                                        <th>Tipe</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in medical_records %}
+                                    <tr>
+                                        <td>{{ record.visit_date|replace("T", " ")|truncate(10, True, "") }}</td>
+                                        <td>{{ record.doctor_name }}</td>
+                                        <td>
+                                            {% for diagnosis in record.diagnosis %}
+                                                <span class="badge bg-info">{{ diagnosis }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {% if record.record_type == "outpatient" %}
+                                                <span class="badge bg-success">Rawat Jalan</span>
+                                            {% elif record.record_type == "inpatient" %}
+                                                <span class="badge bg-warning">Rawat Inap</span>
+                                            {% elif record.record_type == "emergency" %}
+                                                <span class="badge bg-danger">Darurat</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('main_bp.view_medical_record', record_id=record.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">Pasien belum memiliki rekam medis</p>
+                            <a href="{{ url_for('main_bp.add_medical_record') }}?patient_id={{ patient.id }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Tambah Rekam Medis
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Jadwal Temu</h5>
+                    <a href="{{ url_for('main_bp.add_appointment') }}?patient_id={{ patient.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Buat Janji Temu
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Waktu</th>
+                                        <th>Dokter</th>
+                                        <th>Departemen</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                    <tr>
+                                        <td>{{ appointment.appointment_date|replace("T", " ")|truncate(10, True, "") }}</td>
+                                        <td>{{ appointment.appointment_time }}</td>
+                                        <td>{{ appointment.doctor_name }}</td>
+                                        <td>{{ appointment.department_name }}</td>
+                                        <td>
+                                            {% if appointment.status == "scheduled" %}
+                                                <span class="badge bg-info">Terjadwal</span>
+                                            {% elif appointment.status == "completed" %}
+                                                <span class="badge bg-success">Selesai</span>
+                                            {% elif appointment.status == "cancelled" %}
+                                                <span class="badge bg-danger">Dibatalkan</span>
+                                            {% elif appointment.status == "no-show" %}
+                                                <span class="badge bg-warning">Tidak Hadir</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">Pasien belum memiliki janji temu</p>
+                            <a href="{{ url_for('main_bp.add_appointment') }}?patient_id={{ patient.id }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Buat Janji Temu
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Tagihan</h5>
+                    <a href="{{ url_for('main_bp.add_billing') }}?patient_id={{ patient.id }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Tambah Tagihan
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if billing_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Total</th>
+                                        <th>Tanggungan Pasien</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in billing_records %}
+                                    <tr>
+                                        <td>{{ bill.issued_date|replace("T", " ")|truncate(10, True, "") }}</td>
+                                        <td>Rp {{ "%.2f"|format(bill.total_amount)|replace(".", ",") }}</td>
+                                        <td>Rp {{ "%.2f"|format(bill.patient_responsibility)|replace(".", ",") }}</td>
+                                        <td>
+                                            {% if bill.status == "pending" %}
+                                                <span class="badge bg-warning">Belum Dibayar</span>
+                                            {% elif bill.status == "paid" %}
+                                                <span class="badge bg-success">Lunas</span>
+                                            {% elif bill.status == "partially_paid" %}
+                                                <span class="badge bg-info">Dibayar Sebagian</span>
+                                            {% elif bill.status == "cancelled" %}
+                                                <span class="badge bg-danger">Dibatalkan</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('main_bp.view_billing', bill_id=bill.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="text-muted">Pasien belum memiliki tagihan</p>
+                            <a href="{{ url_for('main_bp.add_billing') }}?patient_id={{ patient.id }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Tambah Tagihan
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <!-- Patient listing -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Daftar Pasien</h5>
+            <a href="{{ url_for('main_bp.add_patient') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tambah Pasien Baru
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchPatient" placeholder="Cari pasien berdasarkan nama, nomor rekam medis atau NIK...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="patientTable">
+                    <thead>
+                        <tr>
+                            <th>No. Rekam Medis</th>
+                            <th>Nama</th>
+                            <th>JK</th>
+                            <th>Tanggal Lahir</th>
+                            <th>Telepon</th>
+                            <th>Terakhir Kunjungan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                        <tr>
+                            <td>{{ patient.medical_record_number }}</td>
+                            <td>{{ patient.name }}</td>
+                            <td>{{ "L" if patient.gender == "male" else "P" }}</td>
+                            <td>{{ patient.birth_date|replace("T", " ")|truncate(10, True, "") }}</td>
+                            <td>{{ patient.phone }}</td>
+                            <td>-</td>
+                            <td>
+                                <a href="{{ url_for('main_bp.view_patient', patient_id=patient.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/patient.js') }}"></script>
+{% endblock %}

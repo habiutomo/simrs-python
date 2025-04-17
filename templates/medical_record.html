@@ -1,0 +1,416 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    {% if action == "add" %}
+        Tambah Rekam Medis Baru
+    {% elif action == "view" %}
+        Detail Rekam Medis
+    {% else %}
+        Rekam Medis
+    {% endif %}
+</h1>
+{% endblock %}
+
+{% block content %}
+{% if action == "add" %}
+    <!-- Add medical record form -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Form Rekam Medis</h5>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('main_bp.add_medical_record') }}" method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="patient_id" class="form-label">Pasien *</label>
+                        <select class="form-select" id="patient_id" name="patient_id" required>
+                            <option value="">Pilih pasien...</option>
+                            {% for patient in patients %}
+                                <option value="{{ patient.id }}" {% if request.args.get('patient_id') == patient.id %}selected{% endif %}>
+                                    {{ patient.name }} ({{ patient.medical_record_number }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="doctor_id" class="form-label">Dokter *</label>
+                        <select class="form-select" id="doctor_id" name="doctor_id" required>
+                            <option value="">Pilih dokter...</option>
+                            {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}">{{ doctor.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="visit_date" class="form-label">Tanggal Kunjungan *</label>
+                        <input type="date" class="form-control" id="visit_date" name="visit_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="record_type" class="form-label">Tipe Rekam Medis *</label>
+                        <select class="form-select" id="record_type" name="record_type" required>
+                            <option value="outpatient">Rawat Jalan</option>
+                            <option value="inpatient">Rawat Inap</option>
+                            <option value="emergency">Gawat Darurat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="chief_complaint" class="form-label">Keluhan Utama *</label>
+                    <textarea class="form-control" id="chief_complaint" name="chief_complaint" rows="2" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Diagnosis *</label>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <input type="text" class="form-control" id="diagnosis_input" placeholder="Masukkan diagnosis">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-primary w-100" id="addDiagnosisBtn">Tambah</button>
+                        </div>
+                    </div>
+                    <div id="diagnosis_list" class="mt-2">
+                        <!-- Diagnosis items will be added here -->
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="treatment" class="form-label">Tindakan/Pengobatan</label>
+                    <textarea class="form-control" id="treatment" name="treatment" rows="3"></textarea>
+                </div>
+
+                <h5 class="mt-4 mb-3">Tanda Vital</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="blood_pressure" class="form-label">Tekanan Darah</label>
+                        <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" placeholder="120/80 mmHg">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="heart_rate" class="form-label">Detak Jantung</label>
+                        <input type="text" class="form-control" id="heart_rate" name="heart_rate" placeholder="80 bpm">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="temperature" class="form-label">Suhu</label>
+                        <input type="text" class="form-control" id="temperature" name="temperature" placeholder="36.5 °C">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="respiratory_rate" class="form-label">Laju Pernapasan</label>
+                        <input type="text" class="form-control" id="respiratory_rate" name="respiratory_rate" placeholder="16 rpm">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="oxygen_saturation" class="form-label">Saturasi Oksigen</label>
+                        <input type="text" class="form-control" id="oxygen_saturation" name="oxygen_saturation" placeholder="98%">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="weight" class="form-label">Berat Badan</label>
+                        <input type="text" class="form-control" id="weight" name="weight" placeholder="70 kg">
+                    </div>
+                </div>
+
+                <h5 class="mt-4 mb-3">Resep</h5>
+                <div id="prescriptionContainer">
+                    <!-- Prescription items will be added here -->
+                </div>
+                <button type="button" id="addPrescriptionBtn" class="btn btn-outline-primary mb-3">
+                    <i class="fas fa-plus"></i> Tambah Resep
+                </button>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Catatan</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="follow_up" class="form-label">Rencana Tindak Lanjut</label>
+                    <textarea class="form-control" id="follow_up" name="follow_up" rows="2"></textarea>
+                </div>
+
+                <div class="text-end mt-4">
+                    <a href="{{ url_for('main_bp.medical_record_list') }}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary">Simpan Rekam Medis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Patient medical history panel -->
+    <div id="medicalHistoryContainer" class="mt-4">
+        <!-- Patient history will be loaded here when patient is selected -->
+    </div>
+
+{% elif action == "view" %}
+    <!-- Medical record details view -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Detail Rekam Medis</h5>
+            <div>
+                <a href="{{ url_for('main_bp.view_patient', patient_id=patient.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-user"></i> Profil Pasien
+                </a>
+                <a href="#" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-print"></i> Cetak
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="medical-record-header mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Informasi Pasien</h6>
+                        <p class="mb-1"><strong>Nama:</strong> {{ patient.name }}</p>
+                        <p class="mb-1"><strong>No. Rekam Medis:</strong> {{ patient.medical_record_number }}</p>
+                        <p class="mb-1"><strong>Jenis Kelamin:</strong> {{ "Laki-laki" if patient.gender == "male" else "Perempuan" }}</p>
+                        <p class="mb-1"><strong>Tanggal Lahir:</strong> {{ patient.birth_date|replace("T", " ")|truncate(10, True, "") }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Informasi Kunjungan</h6>
+                        <p class="mb-1"><strong>Tanggal Kunjungan:</strong> {{ record.visit_date|replace("T", " ")|truncate(10, True, "") }}</p>
+                        <p class="mb-1"><strong>Dokter:</strong> {{ doctor.name }}</p>
+                        <p class="mb-1"><strong>Tipe:</strong> 
+                            {% if record.record_type == "outpatient" %}
+                                <span class="badge bg-success">Rawat Jalan</span>
+                            {% elif record.record_type == "inpatient" %}
+                                <span class="badge bg-warning">Rawat Inap</span>
+                            {% elif record.record_type == "emergency" %}
+                                <span class="badge bg-danger">Gawat Darurat</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Keluhan Utama</h6>
+                    <p>{{ record.chief_complaint }}</p>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Diagnosis</h6>
+                    <div>
+                        {% for diagnosis in record.diagnosis %}
+                            <span class="badge bg-info p-2 me-1 mb-1">{{ diagnosis }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% if record.vitals %}
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Tanda Vital</h6>
+                    <div class="vitals-panel">
+                        <div class="row">
+                            {% if record.vitals.blood_pressure %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Tekanan Darah</small>
+                                <p class="mb-0">{{ record.vitals.blood_pressure }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.vitals.heart_rate %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Detak Jantung</small>
+                                <p class="mb-0">{{ record.vitals.heart_rate }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.vitals.temperature %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Suhu</small>
+                                <p class="mb-0">{{ record.vitals.temperature }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.vitals.respiratory_rate %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Laju Pernapasan</small>
+                                <p class="mb-0">{{ record.vitals.respiratory_rate }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.vitals.oxygen_saturation %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Saturasi Oksigen</small>
+                                <p class="mb-0">{{ record.vitals.oxygen_saturation }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.vitals.weight %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Berat Badan</small>
+                                <p class="mb-0">{{ record.vitals.weight }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            {% if record.vitals.height %}
+                            <div class="col-md-3 mb-2">
+                                <small class="text-muted">Tinggi Badan</small>
+                                <p class="mb-0">{{ record.vitals.height }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Tindakan/Pengobatan</h6>
+                    <p>{{ record.treatment or "-" }}</p>
+                </div>
+            </div>
+
+            {% if record.prescriptions %}
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Resep</h6>
+                    {% for prescription in record.prescriptions %}
+                    <div class="prescription-item">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>{{ prescription.medication }}</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Dosis:</small> {{ prescription.dosage }}
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">Frekuensi:</small> {{ prescription.frequency }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <small class="text-muted">Durasi:</small> {{ prescription.duration }}
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Instruksi:</small> {{ prescription.instructions or "-" }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if record.notes %}
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Catatan</h6>
+                    <p>{{ record.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if record.follow_up %}
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h6>Rencana Tindak Lanjut</h6>
+                    <p>{{ record.follow_up }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('main_bp.medical_record_list') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Kembali
+                </a>
+                <div>
+                    <a href="#" class="btn btn-outline-warning">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{{ url_for('main_bp.add_billing') }}?patient_id={{ patient.id }}&visit_id={{ record.id }}" class="btn btn-outline-success">
+                        <i class="fas fa-file-invoice-dollar"></i> Buat Tagihan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <!-- Medical records listing -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Daftar Rekam Medis</h5>
+            <a href="{{ url_for('main_bp.add_medical_record') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tambah Rekam Medis
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="searchMedicalRecord" placeholder="Cari rekam medis berdasarkan nama pasien, nomor rekam medis, atau tanggal...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover" id="medicalRecordTable">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Pasien</th>
+                            <th>No. Rekam Medis</th>
+                            <th>Dokter</th>
+                            <th>Diagnosis</th>
+                            <th>Tipe</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>{{ record.visit_date|replace("T", " ")|truncate(10, True, "") }}</td>
+                            <td>{{ record.patient_name }}</td>
+                            <td>{{ record.medical_record_number }}</td>
+                            <td>{{ record.doctor_name }}</td>
+                            <td>
+                                {% for diagnosis in record.diagnosis %}
+                                    <span class="badge bg-info">{{ diagnosis }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% if record.record_type == "outpatient" %}
+                                    <span class="badge bg-success">Rawat Jalan</span>
+                                {% elif record.record_type == "inpatient" %}
+                                    <span class="badge bg-warning">Rawat Inap</span>
+                                {% elif record.record_type == "emergency" %}
+                                    <span class="badge bg-danger">Gawat Darurat</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('main_bp.view_medical_record', record_id=record.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/medical_record.js') }}"></script>
+{% endblock %}

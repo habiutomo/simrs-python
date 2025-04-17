@@ -1,0 +1,447 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">Farmasi</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Pending Prescriptions Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Resep yang Perlu Dilayani</h5>
+                <div>
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-outline-secondary active">Semua</button>
+                        <button type="button" class="btn btn-outline-secondary">Prioritas</button>
+                        <button type="button" class="btn btn-outline-secondary">Rawat Inap</button>
+                        <button type="button" class="btn btn-outline-secondary">Rawat Jalan</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchPrescription" placeholder="Cari resep berdasarkan nama pasien, dokter, atau obat...">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="prescriptionTable">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Pasien</th>
+                                <th>Dokter</th>
+                                <th>Obat</th>
+                                <th>Dosis</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prescription in prescriptions %}
+                            <tr>
+                                <td>
+                                    {% if prescription.prescribed_at %}
+                                        {{ prescription.prescribed_at|replace("T", " ")|truncate(16, True, "") }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ prescription.patient_name }}</td>
+                                <td>Dr. {{ prescription.doctor_name if prescription.doctor_name else "Unknown" }}</td>
+                                <td>{{ prescription.medication }}</td>
+                                <td>{{ prescription.dosage }} - {{ prescription.frequency }}</td>
+                                <td>
+                                    <span class="badge bg-warning">Pending</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary dispense-prescription-btn" 
+                                                data-id="{{ prescription.record_id }}" title="Proses Resep">
+                                            <i class="fas fa-prescription-bottle-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Detail">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title">Riwayat Resep Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Pasien</th>
+                                <th>Obat</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2023-06-15 14:30</td>
+                                <td>Ahmad Hidayat</td>
+                                <td>Paracetamol 500mg</td>
+                                <td><span class="badge bg-success">Selesai</span></td>
+                            </tr>
+                            <tr>
+                                <td>2023-06-15 14:15</td>
+                                <td>Budi Santoso</td>
+                                <td>Amoxicillin 500mg</td>
+                                <td><span class="badge bg-success">Selesai</span></td>
+                            </tr>
+                            <tr>
+                                <td>2023-06-15 13:45</td>
+                                <td>Citra Dewi</td>
+                                <td>Omeprazole 20mg</td>
+                                <td><span class="badge bg-success">Selesai</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Inventory Alerts Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Peringatan Inventaris</h5>
+            </div>
+            <div class="card-body p-0">
+                <div id="inventoryAlerts">
+                    <div class="alert alert-warning m-3" role="alert">
+                        <strong><i class="fas fa-exclamation-triangle"></i> Stok Rendah:</strong> Amoxicillin 500mg (5 item tersisa)
+                    </div>
+                    <div class="alert alert-danger m-3" role="alert">
+                        <strong><i class="fas fa-exclamation-circle"></i> Stok Habis:</strong> Cetirizine 10mg
+                    </div>
+                    <div class="alert alert-info m-3" role="alert">
+                        <strong><i class="fas fa-info-circle"></i> Akan Kadaluarsa:</strong> Paracetamol Syrup (30 hari lagi)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Management Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Manajemen Inventaris</h5>
+                <button type="button" class="btn btn-sm btn-primary" id="addInventoryBtn">
+                    <i class="fas fa-plus"></i> Tambah Item
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Cari obat...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="inventory-list">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nama Obat</th>
+                                    <th>Stok</th>
+                                    <th>Satuan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item_name, item in inventory.items() %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>
+                                        <span class="{% if item.quantity < item.min_quantity %}text-danger{% elif item.quantity < item.min_quantity*2 %}text-warning{% else %}text-success{% endif %}">
+                                            {{ item.quantity }}
+                                        </span>
+                                    </td>
+                                    <td>{{ item.unit }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary update-inventory-btn" 
+                                                data-id="{{ item.id }}" title="Update Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td>Paracetamol 500mg</td>
+                                    <td><span class="text-success">120</span></td>
+                                    <td>Tablet</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary update-inventory-btn" 
+                                                data-id="1" title="Update Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Amoxicillin 500mg</td>
+                                    <td><span class="text-danger">5</span></td>
+                                    <td>Kapsul</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary update-inventory-btn" 
+                                                data-id="2" title="Update Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Omeprazole 20mg</td>
+                                    <td><span class="text-success">60</span></td>
+                                    <td>Kapsul</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary update-inventory-btn" 
+                                                data-id="3" title="Update Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Cetirizine 10mg</td>
+                                    <td><span class="text-danger">0</span></td>
+                                    <td>Tablet</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary update-inventory-btn" 
+                                                data-id="4" title="Update Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Paracetamol Syrup</td>
+                                    <td><span class="text-warning">10</span></td>
+                                    <td>Botol</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary update-inventory-btn" 
+                                                data-id="5" title="Update Stok">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dispense Prescription Modal -->
+<div class="modal fade" id="dispensePrescriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Proses Resep</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Pastikan semua obat tersedia sebelum memproses resep.
+                </div>
+                
+                <h6>Informasi Pasien</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Nama:</strong> <span id="dispense_patient_name">Ahmad Hidayat</span></p>
+                        <p class="mb-1"><strong>No. RM:</strong> <span id="dispense_patient_mrn">RM-2023060001</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Dokter:</strong> <span id="dispense_doctor_name">Dr. Sutono</span></p>
+                        <p class="mb-1"><strong>Tanggal Resep:</strong> <span id="dispense_date">15 Juni 2023</span></p>
+                    </div>
+                </div>
+                
+                <h6>Daftar Obat</h6>
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Nama Obat</th>
+                                <th>Dosis</th>
+                                <th>Jumlah</th>
+                                <th>Instruksi</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Paracetamol 500mg</td>
+                                <td>1 tablet</td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" value="10" min="1">
+                                </td>
+                                <td>3x sehari setelah makan</td>
+                                <td>
+                                    <span class="badge bg-success">Tersedia</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Amoxicillin 500mg</td>
+                                <td>1 kapsul</td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" value="15" min="1">
+                                </td>
+                                <td>3x sehari</td>
+                                <td>
+                                    <span class="badge bg-warning">Stok rendah</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h6>Catatan Tambahan</h6>
+                <textarea class="form-control" rows="2" placeholder="Tambahkan catatan khusus jika diperlukan..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-warning">Cetak Label</button>
+                <button type="button" class="btn btn-primary">Proses Resep</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Modal -->
+<div class="modal fade" id="inventoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Item Inventaris</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inventoryForm">
+                    <div class="mb-3">
+                        <label for="med_name" class="form-label">Nama Obat</label>
+                        <input type="text" class="form-control" id="med_name" name="name" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="med_category" class="form-label">Kategori</label>
+                            <select class="form-select" id="med_category" name="category">
+                                <option value="">Pilih kategori...</option>
+                                <option value="analgesic">Analgesik</option>
+                                <option value="antibiotic">Antibiotik</option>
+                                <option value="antihistamine">Antihistamin</option>
+                                <option value="antihypertensive">Antihipertensi</option>
+                                <option value="others">Lainnya</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="med_form" class="form-label">Bentuk Sediaan</label>
+                            <select class="form-select" id="med_form" name="form">
+                                <option value="">Pilih bentuk...</option>
+                                <option value="tablet">Tablet</option>
+                                <option value="capsule">Kapsul</option>
+                                <option value="syrup">Sirup</option>
+                                <option value="injection">Injeksi</option>
+                                <option value="cream">Krim</option>
+                                <option value="others">Lainnya</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="med_quantity" class="form-label">Jumlah</label>
+                            <input type="number" class="form-control" id="med_quantity" name="quantity" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="med_unit" class="form-label">Satuan</label>
+                            <input type="text" class="form-control" id="med_unit" name="unit" placeholder="Tablet, Botol, dll" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="med_min_quantity" class="form-label">Stok Minimum</label>
+                            <input type="number" class="form-control" id="med_min_quantity" name="min_quantity" min="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="med_expiry_date" class="form-label">Tanggal Kadaluarsa</label>
+                            <input type="date" class="form-control" id="med_expiry_date" name="expiry_date">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="med_supplier" class="form-label">Supplier</label>
+                        <input type="text" class="form-control" id="med_supplier" name="supplier">
+                    </div>
+                    <div class="mb-3">
+                        <label for="med_notes" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="med_notes" name="notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="saveInventoryBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/modules/pharmacy.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dispense prescription buttons
+        const dispenseBtns = document.querySelectorAll('.dispense-prescription-btn');
+        dispenseBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const prescriptionId = this.getAttribute('data-id');
+                const dispensePrescriptionModal = new bootstrap.Modal(document.getElementById('dispensePrescriptionModal'));
+                dispensePrescriptionModal.show();
+            });
+        });
+        
+        // Initialize add inventory button
+        const addInventoryBtn = document.getElementById('addInventoryBtn');
+        if (addInventoryBtn) {
+            addInventoryBtn.addEventListener('click', function() {
+                const inventoryModal = new bootstrap.Modal(document.getElementById('inventoryModal'));
+                inventoryModal.show();
+            });
+        }
+        
+        // Initialize update inventory buttons
+        const updateInventoryBtns = document.querySelectorAll('.update-inventory-btn');
+        updateInventoryBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.getAttribute('data-id');
+                
+                // In a real app, we would fetch item details from the server
+                // For now, just show the modal with a different title
+                const inventoryModal = document.getElementById('inventoryModal');
+                inventoryModal.querySelector('.modal-title').textContent = 'Update Item Inventaris';
+                
+                // Show the modal
+                const bsModal = new bootstrap.Modal(inventoryModal);
+                bsModal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}
