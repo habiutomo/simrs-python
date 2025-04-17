@@ -653,7 +653,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-lg-3 col-md-6 mb-4">
                         <div class="card border-left-success">
                             <div class="card-body py-3">
@@ -670,7 +670,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-lg-3 col-md-6 mb-4">
                         <div class="card border-left-info">
                             <div class="card-body py-3">
@@ -687,7 +687,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-lg-3 col-md-6 mb-4">
                         <div class="card border-left-warning">
                             <div class="card-body py-3">
@@ -705,7 +705,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-lg-8 mb-4">
                         <h6 class="mb-3">Pola Kunjungan Per Jam</h6>
@@ -716,7 +716,7 @@
                         <canvas id="ageGenderChart" height="200"></canvas>
                     </div>
                 </div>
-                
+
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <h6 class="mb-3">Rata-rata Waktu Tunggu per Departemen (Menit)</h6>
@@ -729,8 +729,7 @@
                                         <th>Status</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
+                                <tbody>                                    <tr>
                                         <td>Poli Umum</td>
                                         <td>32 menit</td>
                                         <td><span class="badge bg-warning">Sedang</span></td>
@@ -856,6 +855,11 @@
                                 <option value="clinical">Klinis</option>
                                 <option value="inventory">Inventaris</option>
                                 <option value="hr">Kepegawaian</option>
+                                <option value="rl1">RL 1 - Data Dasar RS</option>
+                                <option value="rl2">RL 2 - Ketenagaan RS</option>
+                                <option value="rl3">RL 3 - Pelayanan RS</option>
+                                <option value="rl4">RL 4 - Morbiditas/Mortalitas</option>
+                                <option value="rl5">RL 5 - Bulanan</option>
                             </select>
                         </div>
                     </div>
@@ -1022,7 +1026,7 @@
                 maintainAspectRatio: false
             }
         });
-        
+
         const deptDistCtx = document.getElementById('departmentDistributionChart').getContext('2d');
         const deptDistChart = new Chart(deptDistCtx, {
             type: 'pie',
@@ -1047,7 +1051,7 @@
                 maintainAspectRatio: false
             }
         });
-        
+
         const revExpCtx = document.getElementById('revenueExpenseChart').getContext('2d');
         const revExpChart = new Chart(revExpCtx, {
             type: 'bar',
@@ -1081,7 +1085,7 @@
                 }
             }
         });
-        
+
         // Dashboard analytics charts
         const hourlyVisitsCtx = document.getElementById('hourlyVisitsChart').getContext('2d');
         const hourlyVisitsChart = new Chart(hourlyVisitsCtx, {
@@ -1121,7 +1125,7 @@
                 }
             }
         });
-        
+
         const ageGenderCtx = document.getElementById('ageGenderChart').getContext('2d');
         const ageGenderChart = new Chart(ageGenderCtx, {
             type: 'bar',
@@ -1159,7 +1163,7 @@
                 }
             }
         });
-        
+
         // Handle period selection in create report modal
         document.getElementById('reportPeriod').addEventListener('change', function() {
             const customDateRange = document.getElementById('customDateRange');
@@ -1169,7 +1173,7 @@
                 customDateRange.style.display = 'none';
             }
         });
-        
+
         // Handle schedule report checkbox
         document.getElementById('scheduleReport').addEventListener('change', function() {
             const scheduleOptions = document.getElementById('scheduleOptions');
@@ -1179,7 +1183,7 @@
                 scheduleOptions.style.display = 'none';
             }
         });
-        
+
         // Generate report button
         document.getElementById('generateReportBtn').addEventListener('click', function() {
             alert('Laporan berhasil dibuat dan dapat diakses di daftar laporan.');

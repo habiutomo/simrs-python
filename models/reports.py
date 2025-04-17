@@ -12,11 +12,16 @@ from app import db
 
 class ReportCategory(enum.Enum):
     OPERATIONAL = "operational"
-    FINANCIAL = "financial"
+    FINANCIAL = "financial" 
     CLINICAL = "clinical"
     INVENTORY = "inventory"
     HR = "hr"
     CUSTOM = "custom"
+    RL1 = "rl1"  # Data Dasar Rumah Sakit
+    RL2 = "rl2"  # Ketenagaan Rumah Sakit
+    RL3 = "rl3"  # Pelayanan Rumah Sakit
+    RL4 = "rl4"  # Morbiditas/Mortalitas
+    RL5 = "rl5"  # Bulanan
 
 class ReportPeriod(enum.Enum):
     DAILY = "daily"

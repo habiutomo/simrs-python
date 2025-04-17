@@ -422,3 +422,98 @@ def send_scheduled_report(report_id, recipients, subject=None, message=None):
     except Exception as e:
         current_app.logger.error(f"Error sending scheduled report: {str(e)}")
         return False
+def generate_rl_report(rl_type, period_start, period_end):
+    """
+    Generate regulatory reports (RL)
+    
+    Args:
+        rl_type (str): Type of RL report (RL1-RL5)
+        period_start (date): Start date
+        period_end (date): End date
+        
+    Returns:
+        dict: Report data
+    """
+    from app import db
+    
+    if rl_type == "rl1":
+        # RL 1 - Data Dasar RS
+        query = """
+        SELECT 
+            d.name as department_name,
+            COUNT(DISTINCT p.id) as total_patients,
+            COUNT(DISTINCT i.id) as total_inpatients,
+            COUNT(DISTINCT b.id) as total_beds
+        FROM departments d
+        LEFT JOIN medical_records m ON m.department_id = d.id 
+        LEFT JOIN patients p ON m.patient_id = p.id
+        LEFT JOIN inpatients i ON i.patient_id = p.id
+        LEFT JOIN beds b ON b.department_id = d.id
+        WHERE m.created_at BETWEEN :start AND :end
+        GROUP BY d.id
+        """
+        
+    elif rl_type == "rl2":
+        # RL 2 - Ketenagaan RS
+        query = """
+        SELECT 
+            role,
+            COUNT(*) as total,
+            SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) as active
+        FROM users
+        GROUP BY role
+        """
+        
+    elif rl_type == "rl3":
+        # RL 3 - Pelayanan RS
+        query = """
+        SELECT 
+            d.name as service_name,
+            COUNT(*) as total_services,
+            AVG(EXTRACT(EPOCH FROM (m.updated_at - m.created_at))/3600) as avg_service_hours
+        FROM medical_records m
+        JOIN departments d ON m.department_id = d.id
+        WHERE m.created_at BETWEEN :start AND :end
+        GROUP BY d.id
+        """
+        
+    elif rl_type == "rl4":
+        # RL 4 - Morbiditas/Mortalitas
+        query = """
+        SELECT 
+            m.diagnosis,
+            COUNT(*) as total_cases,
+            SUM(CASE WHEN m.outcome='deceased' THEN 1 ELSE 0 END) as mortality
+        FROM medical_records m
+        WHERE m.created_at BETWEEN :start AND :end
+        GROUP BY m.diagnosis
+        """
+        
+    elif rl_type == "rl5":
+        # RL 5 - Bulanan
+        query = """
+        SELECT 
+            DATE_TRUNC('month', m.created_at) as month,
+            COUNT(*) as total_visits,
+            COUNT(DISTINCT p.id) as unique_patients
+        FROM medical_records m
+        JOIN patients p ON m.patient_id = p.id
+        WHERE m.created_at BETWEEN :start AND :end
+        GROUP BY DATE_TRUNC('month', m.created_at)
+        """
+    
+    try:
+        result = db.session.execute(query, {"start": period_start, "end": period_end})
+        return {
+            "success": True,
+            "data": [dict(row) for row in result],
+            "period": {
+                "start": period_start,
+                "end": period_end
+            }
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
