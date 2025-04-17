@@ -7,15 +7,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="card mb-4">
     <div class="card-header">
         <h5 class="card-title mb-0">Form Billing Baru</h5>
     </div>
     <div class="card-body">
-        <form action="{{ url_for('main_bp.add_billing') }}" method="POST" id="billingForm">
+        <form action="{{ url_for('main_bp.add_billing') }}" method="POST" id="billingForm" class="needs-validation" novalidate>
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="patient_id" class="form-label">Pasien <span class="text-danger">*</span></label>
+                    <label class="form-label">Pasien <span class="text-danger">*</span></label>
                     <select class="form-select" id="patient_id" name="patient_id" required>
                         <option value="">Pilih Pasien...</option>
                         {% for patient in patients %}
@@ -35,7 +35,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="issued_date" class="form-label">Tanggal Faktur <span class="text-danger">*</span></label>
@@ -46,19 +46,21 @@
                     <input type="date" class="form-control" id="due_date" name="due_date" required>
                 </div>
             </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <label class="form-label">Item Tagihan <span class="text-danger">*</span></label>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Item Tagihan <span class="text-danger">*</span></h6>
+                </div>
+                <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered" id="billing_items">
+                        <table class="table table-bordered billing-items-table">
                             <thead>
                                 <tr>
-                                    <th width="40%">Deskripsi</th>
-                                    <th width="15%">Jumlah</th>
-                                    <th width="20%">Harga (Rp)</th>
-                                    <th width="20%">Total (Rp)</th>
-                                    <th width="5%"></th>
+                                    <th>Deskripsi</th>
+                                    <th style="width: 100px">Jumlah</th>
+                                    <th style="width: 200px">Harga (Rp)</th>
+                                    <th style="width: 200px">Total (Rp)</th>
+                                    <th style="width: 50px"></th>
                                 </tr>
                             </thead>
                             <tbody id="billing_items_container">
@@ -103,7 +105,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="row mb-3">
                 <div class="col-md-6">
                     <div class="card">
@@ -159,12 +161,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="mb-3">
                 <label for="notes" class="form-label">Catatan</label>
                 <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
             </div>
-            
+
             <div class="d-flex justify-content-between">
                 <a href="{{ url_for('main_bp.billing_list') }}" class="btn btn-secondary">Batal</a>
                 <button type="submit" class="btn btn-primary">Simpan</button>
@@ -180,7 +182,7 @@
         // Calculate due date (30 days from issue date by default)
         const issuedDateInput = document.getElementById('issued_date');
         const dueDateInput = document.getElementById('due_date');
-        
+
         // Set default due date (30 days from issue date)
         function updateDueDate() {
             const issuedDate = new Date(issuedDateInput.value);
@@ -190,17 +192,17 @@
                 dueDateInput.value = dueDate.toISOString().split('T')[0];
             }
         }
-        
+
         // Set initial due date
         updateDueDate();
-        
+
         // Update due date when issued date changes
         issuedDateInput.addEventListener('change', updateDueDate);
-        
+
         // Filter appointments based on selected patient
         const patientSelect = document.getElementById('patient_id');
         const visitSelect = document.getElementById('visit_id');
-        
+
         patientSelect.addEventListener('change', function() {
             const selectedPatient = this.value;
             for (const option of visitSelect.options) {
@@ -212,12 +214,12 @@
             }
             visitSelect.value = '';
         });
-        
+
         // Add new billing item
         document.getElementById('add_item_btn').addEventListener('click', function() {
             const container = document.getElementById('billing_items_container');
             const newRow = container.querySelector('.billing-item').cloneNode(true);
-            
+
             // Clear input values
             newRow.querySelectorAll('input').forEach(input => {
                 if (input.type === 'number' && input.classList.contains('item-qty')) {
@@ -225,15 +227,15 @@
                 } else if (input.type !== 'text' || !input.classList.contains('item-total')) {
                     input.value = '';
                 }
-                
+
                 if (input.classList.contains('item-price') || input.classList.contains('item-qty')) {
                     input.addEventListener('input', updateTotals);
                 }
             });
-            
+
             // Reset item total
             newRow.querySelector('.item-total').value = '0';
-            
+
             // Set up remove button
             const removeBtn = newRow.querySelector('.remove-item');
             removeBtn.addEventListener('click', function() {
@@ -244,17 +246,17 @@
                     alert('Minimal harus ada satu item tagihan.');
                 }
             });
-            
+
             container.appendChild(newRow);
         });
-        
+
         // Calculate item total when price or quantity changes
         function updateItemTotal(row) {
             const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
             const price = parseFloat(row.querySelector('.item-price').value) || 0;
             row.querySelector('.item-total').value = (qty * price).toLocaleString('id-ID');
         }
-        
+
         // Calculate totals
         function updateTotals() {
             let total = 0;
@@ -263,21 +265,21 @@
                 const itemTotal = parseFloat(row.querySelector('.item-total').value.replace(/\./g, '').replace(',', '.')) || 0;
                 total += itemTotal;
             });
-            
+
             document.getElementById('total_amount').value = total.toLocaleString('id-ID');
-            
+
             // Calculate patient responsibility (total - insurance)
             const insuranceCovered = parseFloat(document.getElementById('insurance_covered').value) || 0;
             const patientResponsibility = Math.max(0, total - insuranceCovered);
             document.getElementById('patient_responsibility').value = patientResponsibility.toLocaleString('id-ID');
         }
-        
+
         // Set up event listeners for initial row
         document.querySelectorAll('.billing-item').forEach(row => {
             row.querySelectorAll('.item-price, .item-qty').forEach(input => {
                 input.addEventListener('input', updateTotals);
             });
-            
+
             const removeBtn = row.querySelector('.remove-item');
             removeBtn.addEventListener('click', function() {
                 if (document.querySelectorAll('.billing-item').length > 1) {
@@ -288,24 +290,24 @@
                 }
             });
         });
-        
+
         // Update totals when insurance amount changes
         document.getElementById('insurance_covered').addEventListener('input', updateTotals);
-        
+
         // Initial calculation
         updateTotals();
-        
+
         // Form submission
         document.getElementById('billingForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Basic validation
             const patientId = document.getElementById('patient_id').value;
             if (!patientId) {
                 alert('Silakan pilih pasien.');
                 return;
             }
-            
+
             const items = document.querySelectorAll('.billing-item');
             let isValid = true;
             items.forEach(item => {
@@ -314,19 +316,19 @@
                     isValid = false;
                 }
             });
-            
+
             if (!isValid) {
                 alert('Harap isi semua deskripsi item.');
                 return;
             }
-            
+
             // Convert formatted numbers to plain numbers for submission
-            document.getElementById('total_amount').value = 
+            document.getElementById('total_amount').value =
                 parseFloat(document.getElementById('total_amount').value.replace(/\./g, '').replace(',', '.')) || 0;
-            
-            document.getElementById('patient_responsibility').value = 
+
+            document.getElementById('patient_responsibility').value =
                 parseFloat(document.getElementById('patient_responsibility').value.replace(/\./g, '').replace(',', '.')) || 0;
-            
+
             // Submit the form
             this.submit();
         });
