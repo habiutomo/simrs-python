@@ -87,6 +87,25 @@ body {
     border-left: 3px solid var(--primary-color);
 }
 
+#sidebar ul li.sidebar-divider {
+    padding: 0 20px;
+    color: #8c99a5;
+}
+
+#sidebar ul li.sidebar-divider hr {
+    border-color: #3a5068;
+    margin: 15px 0 8px 0;
+}
+
+#sidebar ul li.sidebar-divider .sidebar-heading {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 8px;
+}
+
 #sidebar .sidebar-footer {
     padding: 10px 20px;
     background: #1a2530;
