@@ -1,8 +1,3 @@
-habiutomo: buatkan readme.md
-
-Workspace: Collecting workspace informationBerikut adalah contoh isi untuk file `README.md` berdasarkan struktur dan cuplikan kode yang ada di workspace Anda:
-
-```markdown
 # SIMRS (Sistem Informasi Manajemen Rumah Sakit)
 
 SIMRS adalah aplikasi berbasis web untuk mengelola berbagai aspek operasional rumah sakit, termasuk pendaftaran pasien, jadwal janji temu, rekam medis, laporan, dan lainnya.
