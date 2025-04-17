@@ -2,6 +2,10 @@
 
 SIMRS adalah aplikasi berbasis web untuk mengelola berbagai aspek operasional rumah sakit, termasuk pendaftaran pasien, jadwal janji temu, rekam medis, laporan, dan lainnya.
 
+![image](https://github.com/user-attachments/assets/8e6bc0a3-4d6a-41d2-8748-a296e96b079c)
+![image](https://github.com/user-attachments/assets/7f4d5800-e14a-4973-b45a-c16a17bb9ca7)
+
+
 ## Fitur Utama
 
 - **Manajemen Pasien**: Tambah, lihat, dan kelola data pasien.
