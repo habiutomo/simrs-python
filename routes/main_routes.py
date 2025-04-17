@@ -727,3 +727,184 @@ def reports():
 def integration():
     """Display the system integration page"""
     return render_template('integration.html')
+
+@main_bp.route('/integration/bpjs', methods=['GET', 'POST'])
+def integration_bpjs():
+    """Display the BPJS Kesehatan integration page"""
+    from datetime import datetime
+    from models.bpjs import BPJSCredential, BPJSApiLog
+    
+    # Check if BPJS credentials exist
+    credentials = BPJSCredential.query.filter_by(is_active=True).first()
+    
+    # Get connection status
+    connection_status = 'disconnected'
+    if credentials:
+        # Try to test connection (simple check if credentials exist)
+        connection_status = 'connected' if all([credentials.cons_id, credentials.secret_key, credentials.user_key]) else 'disconnected'
+    
+    # Get service status
+    service_status = {
+        'peserta': connection_status == 'connected',
+        'rujukan': connection_status == 'connected',
+        'sep': connection_status == 'connected',
+        'klaim': connection_status == 'connected',
+        'aplicare': connection_status == 'connected'
+    }
+    
+    # Get recent activity logs
+    activity_logs = BPJSApiLog.query.order_by(BPJSApiLog.request_timestamp.desc()).limit(10).all()
+    
+    return render_template('integration_bpjs.html',
+                          credentials=credentials,
+                          connection_status=connection_status,
+                          service_status=service_status,
+                          activity_logs=activity_logs)
+
+@main_bp.route('/integration/bpjs/update-settings', methods=['POST'])
+def update_bpjs_settings():
+    """Update BPJS Kesehatan API settings"""
+    from models.bpjs import BPJSCredential
+    from datetime import datetime
+    
+    if request.method == 'POST':
+        # Get form data
+        cons_id = request.form.get('cons_id')
+        secret_key = request.form.get('secret_key')
+        user_key = request.form.get('user_key')
+        environment = request.form.get('environment', 'development')
+        
+        # Update or create credentials
+        credentials = BPJSCredential.query.filter_by(is_active=True).first()
+        
+        if credentials:
+            # Update existing credentials
+            credentials.cons_id = cons_id
+            credentials.secret_key = secret_key
+            credentials.user_key = user_key
+            credentials.environment = environment
+            credentials.updated_at = datetime.now()
+        else:
+            # Create new credentials
+            credentials = BPJSCredential(
+                cons_id=cons_id,
+                secret_key=secret_key,
+                user_key=user_key,
+                environment=environment,
+                is_active=True,
+                created_at=datetime.now(),
+                updated_at=datetime.now()
+            )
+            db.session.add(credentials)
+            
+        # Save changes
+        db.session.commit()
+        
+        flash('Pengaturan BPJS berhasil disimpan', 'success')
+        
+    return redirect(url_for('main_bp.integration_bpjs'))
+
+@main_bp.route('/integration/bpjs/test-connection', methods=['POST'])
+def test_bpjs_connection():
+    """Test BPJS Kesehatan API connection"""
+    import json
+    from utils.bpjs import BPJSIntegration
+    
+    if request.method == 'POST':
+        try:
+            # Create BPJS integration instance
+            bpjs = BPJSIntegration()
+            
+            # Test connection by checking a dummy data
+            response = bpjs.check_peserta_by_noka('0000000000000')
+            
+            # Even if data is not found, we check if the connection was successful
+            if 'metaData' in response and response['metaData']['code'] in ['200', '201']:
+                return jsonify({'success': True, 'message': 'Koneksi ke API BPJS berhasil'})
+            else:
+                message = response.get('metaData', {}).get('message', 'Unknown error')
+                return jsonify({'success': False, 'message': f'Koneksi gagal: {message}'})
+                
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Koneksi gagal: {str(e)}'})
+    
+    return jsonify({'success': False, 'message': 'Invalid request method'})
+
+@main_bp.route('/integration/bpjs/verification', methods=['GET', 'POST'])
+def bpjs_verification():
+    """BPJS membership verification page"""
+    from datetime import datetime
+    from utils.bpjs import verify_bpjs_membership
+    from models.bpjs import BPJSVerificationLog
+    
+    verification_result = None
+    search_type = 'noka'
+    search_value = None
+    service_date = datetime.now().strftime('%Y-%m-%d')
+    
+    if request.method == 'POST':
+        # Get form data
+        search_type = request.form.get('search_type')
+        search_value = request.form.get('search_value')
+        service_date = request.form.get('service_date', service_date)
+        
+        # Verify membership
+        if search_type == 'noka':
+            verification_result = verify_bpjs_membership(search_value, service_date)
+        else:
+            # Todo: implement NIK verification
+            flash('Verifikasi menggunakan NIK belum diimplementasikan', 'warning')
+            verification_result = {'validity': False, 'message': 'Verifikasi menggunakan NIK belum diimplementasikan'}
+        
+        # Save verification log
+        if verification_result:
+            log = BPJSVerificationLog(
+                search_type=search_type,
+                search_value=search_value,
+                service_date=service_date,
+                response_code=verification_result.get('raw_response', {}).get('metaData', {}).get('code'),
+                response_message=verification_result.get('raw_response', {}).get('metaData', {}).get('message'),
+                response_data=verification_result.get('raw_response'),
+                is_valid=verification_result.get('validity', False),
+                member_name=verification_result.get('nama'),
+                member_status=verification_result.get('status'),
+                member_nik=verification_result.get('nik'),
+                member_card_number=verification_result.get('no_kartu'),
+                member_class=verification_result.get('kelas'),
+                member_type=verification_result.get('jenis_peserta'),
+                primary_facility=verification_result.get('faskes_tingkat1'),
+                created_at=datetime.now()
+            )
+            db.session.add(log)
+            db.session.commit()
+    
+    # Get verification history
+    verification_history = BPJSVerificationLog.query.order_by(BPJSVerificationLog.created_at.desc()).limit(10).all()
+    
+    return render_template('bpjs_verification.html',
+                          verification_result=verification_result,
+                          search_type=search_type,
+                          search_value=search_value,
+                          service_date=service_date,
+                          verification_history=verification_history,
+                          today_date=datetime.now().strftime('%Y-%m-%d'))
+
+@main_bp.route('/integration/bpjs/referral')
+def bpjs_referral():
+    """BPJS referral management page"""
+    return render_template('bpjs_referral.html')
+
+@main_bp.route('/integration/bpjs/sep')
+def bpjs_sep():
+    """BPJS SEP management page"""
+    return render_template('bpjs_sep.html')
+
+@main_bp.route('/integration/bpjs/claim')
+def bpjs_claim():
+    """BPJS claim monitoring page"""
+    return render_template('bpjs_claim.html')
+
+@main_bp.route('/integration/bpjs/bed')
+def bpjs_bed():
+    """BPJS bed management page (Aplicare)"""
+    return render_template('bpjs_bed.html')

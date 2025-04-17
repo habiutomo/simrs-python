@@ -1,0 +1,242 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    Integrasi Sistem
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Konfigurasi Integrasi Sistem</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Pengaturan Integrasi</h5>
+                            <p>Halaman ini memungkinkan Anda mengonfigurasi integrasi sistem SIMRS dengan layanan eksternal dan sistem pihak ketiga.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- BPJS Kesehatan Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <img src="{{ url_for('static', filename='img/bpjs-logo.png') }}" alt="BPJS Kesehatan" width="60" class="rounded"
+                                             onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=BPJS'">
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">BPJS Kesehatan</h5>
+                                        <p class="text-muted small mb-0">Verifikasi, Rujukan, SEP, Klaim</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan layanan BPJS Kesehatan untuk verifikasi kepesertaan, pengelolaan rujukan, pembuatan SEP, dan monitoring klaim.</p>
+                                <div class="d-grid">
+                                    <a href="{{ url_for('main_bp.integration_bpjs') }}" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Gateway Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <img src="{{ url_for('static', filename='img/midtrans-logo.png') }}" alt="Midtrans" width="60" class="rounded"
+                                             onerror="this.onerror=null; this.src='https://via.placeholder.com/60?text=Midtrans'">
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Midtrans</h5>
+                                        <p class="text-muted small mb-0">Payment Gateway</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan Midtrans untuk pembayaran online, mendukung berbagai metode pembayaran seperti kartu kredit, e-wallet, dan transfer bank.</p>
+                                <div class="d-grid">
+                                    <a href="#" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Laboratorium Information System Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-flask"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Sistem Lab</h5>
+                                        <p class="text-muted small mb-0">Laboratorium Information System</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem laboratorium untuk mengirim permintaan pemeriksaan dan menerima hasil pemeriksaan secara otomatis.</p>
+                                <div class="d-grid">
+                                    <a href="#" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radiology Information System Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-x-ray"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Sistem Radiologi</h5>
+                                        <p class="text-muted small mb-0">Radiology Information System</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem radiologi (RIS) dan PACS untuk mengelola pemeriksaan pencitraan dan hasil pembacaan radiologi.</p>
+                                <div class="d-grid">
+                                    <a href="#" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Apotek Information System Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-pills"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Sistem Apotek</h5>
+                                        <p class="text-muted small mb-0">Pharmacy Information System</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem apotek untuk manajemen obat, resep elektronik, dan pengelolaan persediaan.</p>
+                                <div class="d-grid">
+                                    <a href="#" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- E-Reporting Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="display-5 text-primary">
+                                            <i class="fas fa-file-medical-alt"></i>
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">E-Reporting</h5>
+                                        <p class="text-muted small mb-0">Pelaporan ke Dinas Kesehatan</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem pelaporan elektronik Dinas Kesehatan dan Kementerian Kesehatan untuk pelaporan wajib rumah sakit.</p>
+                                <div class="d-grid">
+                                    <a href="#" class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Konfigurasi
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Log Aktivitas Integrasi</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Sistem</th>
+                                <th>Endpoint</th>
+                                <th>Status</th>
+                                <th>Pesan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2025-04-17 10:30:25</td>
+                                <td>BPJS</td>
+                                <td>/Peserta/nokartu</td>
+                                <td><span class="badge bg-success">Sukses</span></td>
+                                <td>Verifikasi peserta berhasil</td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-17 09:15:10</td>
+                                <td>Midtrans</td>
+                                <td>/snap/transaction</td>
+                                <td><span class="badge bg-success">Sukses</span></td>
+                                <td>Pembayaran tagihan BIL-2025041705 berhasil dibuat</td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-17 08:45:32</td>
+                                <td>BPJS</td>
+                                <td>/SEP/2.0/insert</td>
+                                <td><span class="badge bg-danger">Gagal</span></td>
+                                <td>Response time out</td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-16 15:20:15</td>
+                                <td>Midtrans</td>
+                                <td>/notification/status</td>
+                                <td><span class="badge bg-success">Sukses</span></td>
+                                <td>Notifikasi pembayaran diterima</td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-16 14:05:22</td>
+                                <td>BPJS</td>
+                                <td>/Rujukan/Peserta</td>
+                                <td><span class="badge bg-success">Sukses</span></td>
+                                <td>Data rujukan berhasil diambil</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    Integrasi BPJS Kesehatan
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Pengaturan Integrasi BPJS Kesehatan</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Informasi Integrasi</h5>
+                            <p>Modul ini menyediakan integrasi dengan layanan BPJS Kesehatan untuk verifikasi peserta, pengajuan klaim, dan monitoring status klaim.</p>
+                            <p>Untuk menggunakan layanan ini, pastikan Anda telah mendaftarkan fasilitas kesehatan Anda dan mendapatkan kredensial akses API dari BPJS Kesehatan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3">Status Koneksi API BPJS</h6>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            {% if connection_status == 'connected' %}
+                                <span class="badge bg-success p-2"><i class="fas fa-check-circle"></i></span>
+                            {% else %}
+                                <span class="badge bg-danger p-2"><i class="fas fa-times-circle"></i></span>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            {% if connection_status == 'connected' %}
+                                <strong>Terhubung</strong>
+                                <div class="text-muted">Sistem terhubung dengan BPJS Kesehatan API</div>
+                            {% else %}
+                                <strong>Tidak Terhubung</strong>
+                                <div class="text-muted">Sistem tidak dapat terhubung ke BPJS Kesehatan API</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-primary" id="testConnection">
+                                <i class="fas fa-sync"></i> Tes Koneksi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3">Kredensial API</h6>
+                    <form id="bpjsCredentialsForm" method="POST" action="{{ url_for('main_bp.update_bpjs_settings') }}">
+                        <div class="row mb-3">
+                            <label for="inputConsId" class="col-sm-3 col-form-label">Consumer ID</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" id="inputConsId" name="cons_id" 
+                                       value="{{ credentials.cons_id if credentials else '' }}" 
+                                       placeholder="Masukkan Consumer ID" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputSecretKey" class="col-sm-3 col-form-label">Secret Key</label>
+                            <div class="col-sm-9">
+                                <input type="password" class="form-control" id="inputSecretKey" name="secret_key" 
+                                       value="{{ credentials.secret_key if credentials else '' }}" 
+                                       placeholder="Masukkan Secret Key" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="inputUserKey" class="col-sm-3 col-form-label">User Key</label>
+                            <div class="col-sm-9">
+                                <input type="password" class="form-control" id="inputUserKey" name="user_key" 
+                                       value="{{ credentials.user_key if credentials else '' }}" 
+                                       placeholder="Masukkan User Key" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label for="selectEnvironment" class="col-sm-3 col-form-label">Lingkungan</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" id="selectEnvironment" name="environment">
+                                    <option value="development" {% if credentials and credentials.environment == 'development' %}selected{% endif %}>Development/Testing</option>
+                                    <option value="production" {% if credentials and credentials.environment == 'production' %}selected{% endif %}>Production</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="mb-3">Layanan API yang Tersedia</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Layanan</th>
+                                    <th>Deskripsi</th>
+                                    <th width="15%">Status</th>
+                                    <th width="15%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Verifikasi Peserta</td>
+                                    <td>Verifikasi kepesertaan BPJS berdasarkan nomor kartu atau NIK</td>
+                                    <td>
+                                        {% if service_status.peserta %}
+                                            <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Tidak Aktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main_bp.bpjs_verification') }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt"></i> Buka
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Rujukan</td>
+                                    <td>Pengelolaan data rujukan peserta</td>
+                                    <td>
+                                        {% if service_status.rujukan %}
+                                            <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Tidak Aktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main_bp.bpjs_referral') }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt"></i> Buka
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>SEP (Surat Eligibilitas Peserta)</td>
+                                    <td>Pengelolaan SEP untuk layanan rawat jalan dan rawat inap</td>
+                                    <td>
+                                        {% if service_status.sep %}
+                                            <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Tidak Aktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main_bp.bpjs_sep') }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt"></i> Buka
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Klaim</td>
+                                    <td>Monitoring status klaim</td>
+                                    <td>
+                                        {% if service_status.klaim %}
+                                            <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Tidak Aktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main_bp.bpjs_claim') }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt"></i> Buka
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Kamar/Bed</td>
+                                    <td>Pengelolaan ketersediaan tempat tidur (Aplicare)</td>
+                                    <td>
+                                        {% if service_status.aplicare %}
+                                            <span class="badge bg-success">Aktif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Tidak Aktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main_bp.bpjs_bed') }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt"></i> Buka
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Log Aktivitas BPJS</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tanggal/Waktu</th>
+                                <th>Layanan</th>
+                                <th>Endpoint</th>
+                                <th>Status</th>
+                                <th>Pesan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in activity_logs %}
+                            <tr>
+                                <td>{{ log.timestamp }}</td>
+                                <td>{{ log.service }}</td>
+                                <td>{{ log.endpoint }}</td>
+                                <td>
+                                    {% if log.status == 'success' %}
+                                        <span class="badge bg-success">Sukses</span>
+                                    {% elif log.status == 'error' %}
+                                        <span class="badge bg-danger">Error</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ log.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.message }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Belum ada log aktivitas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Test Connection button
+        document.getElementById('testConnection').addEventListener('click', function() {
+            fetch("{{ url_for('main_bp.test_bpjs_connection') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Koneksi berhasil! Status: ' + data.message);
+                } else {
+                    alert('Koneksi gagal: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat mencoba koneksi');
+            });
+        });
+    });
+</script>
+{% endblock %}
