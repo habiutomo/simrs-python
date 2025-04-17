@@ -14,7 +14,10 @@
                 <h5 class="card-title mb-0">Informasi Tagihan #{{ bill.id }}</h5>
                 <div>
                     <a href="{{ url_for('main_bp.pay_billing', bill_id=bill.id) }}" class="btn btn-sm btn-success {% if bill.status == 'paid' %}disabled{% endif %}">
-                        <i class="fas fa-money-bill"></i> Bayar
+                        <i class="fas fa-money-bill"></i> Bayar Tunai
+                    </a>
+                    <a href="{{ url_for('main_bp.pay_billing_online', bill_id=bill.id) }}" class="btn btn-sm btn-info {% if bill.status == 'paid' %}disabled{% endif %}">
+                        <i class="fas fa-credit-card"></i> Bayar Online
                     </a>
                     <button type="button" class="btn btn-sm btn-primary" id="printBill">
                         <i class="fas fa-print"></i> Cetak

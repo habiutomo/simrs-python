@@ -123,6 +123,9 @@
                                         <a href="{{ url_for('main_bp.pay_billing', bill_id=bill.id) }}" class="btn btn-sm btn-success">
                                             <i class="fas fa-money-bill"></i>
                                         </a>
+                                        <a href="{{ url_for('main_bp.pay_billing_online', bill_id=bill.id) }}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-credit-card"></i>
+                                        </a>
                                         <button type="button" class="btn btn-sm btn-secondary print-bill" data-bill-id="{{ bill.id }}">
                                             <i class="fas fa-print"></i>
                                         </button>

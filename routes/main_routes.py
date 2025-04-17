@@ -552,6 +552,122 @@ def pay_billing(bill_id):
     flash('Payment recorded successfully', 'success')
     return redirect(url_for('main_bp.view_billing', bill_id=bill_id))
 
+@main_bp.route('/billing/<bill_id>/pay-online')
+def pay_billing_online(bill_id):
+    """Create a Midtrans payment for a billing record"""
+    from utils.midtrans import create_payment_url
+    
+    bill = g.data_store.get_billing_record(bill_id)
+    if not bill:
+        flash('Billing record not found', 'error')
+        return redirect(url_for('main_bp.billing_list'))
+    
+    # Get the patient
+    patient = g.data_store.get_patient(bill.patient_id)
+    if not patient:
+        flash('Patient data not found', 'error')
+        return redirect(url_for('main_bp.billing_list'))
+    
+    try:
+        # Create bill items for Midtrans
+        items = []
+        for item in bill.items:
+            items.append({
+                "id": f"{bill_id}-{item.get('id', '')}",
+                "price": int(item.get('unit_price', 0)),
+                "quantity": int(item.get('quantity', 1)),
+                "name": item.get('description', 'Medical Service')
+            })
+        
+        # Create Midtrans payment URL
+        payment_response = create_payment_url(
+            bill_id=bill_id,
+            patient_name=patient.name,
+            amount=bill.patient_responsibility,
+            items=items,
+            description=f"Medical bill payment for {patient.name}"
+        )
+        
+        # Redirect to Midtrans payment page
+        return redirect(payment_response['redirect_url'])
+    except Exception as e:
+        flash(f'Failed to process payment: {str(e)}', 'error')
+        return redirect(url_for('main_bp.view_billing', bill_id=bill_id))
+
+@main_bp.route('/payment/finish')
+def payment_finish():
+    """Handle successful payment redirect from Midtrans"""
+    # Get transaction details from query parameters
+    order_id = request.args.get('order_id')
+    transaction_status = request.args.get('transaction_status')
+    
+    if transaction_status == 'settlement' or transaction_status == 'capture':
+        flash('Payment successful! Thank you.', 'success')
+    elif transaction_status == 'pending':
+        flash('Payment is being processed. We will notify you when the payment is complete.', 'info')
+    else:
+        flash('Payment status: ' + transaction_status, 'info')
+    
+    return redirect(url_for('main_bp.billing_list'))
+
+@main_bp.route('/payment/error')
+def payment_error():
+    """Handle payment error redirect from Midtrans"""
+    flash('An error occurred during payment processing. Please try again.', 'error')
+    return redirect(url_for('main_bp.billing_list'))
+
+@main_bp.route('/payment/cancel')
+def payment_cancel():
+    """Handle payment cancellation redirect from Midtrans"""
+    flash('Payment was cancelled.', 'warning')
+    return redirect(url_for('main_bp.billing_list'))
+
+@main_bp.route('/payment/notification', methods=['POST'])
+def payment_notification():
+    """Handle Midtrans payment notification webhook"""
+    from utils.midtrans import handle_notification
+    
+    try:
+        notification_data = request.get_json()
+        result = handle_notification(notification_data)
+        
+        # Update billing record based on payment status
+        order_id = result.get('order_id', '')
+        
+        # Extract the original bill_id from the order_id (if using our generated format)
+        # In a real implementation, you would need to store a mapping between 
+        # Midtrans order_id and your internal bill_id
+        if order_id.startswith('SIMRS-BILL-'):
+            parts = order_id.split('-')
+            if len(parts) > 2:
+                bill_id = parts[2]  # This is just an example
+                
+                if result['status'] == 'success':
+                    # Update billing record as paid
+                    bill = g.data_store.get_billing_record(bill_id)
+                    if bill:
+                        bill.record_payment(
+                            amount=float(result.get('amount', 0)),
+                            method=result.get('payment_type', 'online')
+                        )
+                        
+                        # Update billing record in data store
+                        g.data_store.billing_records[bill_id] = bill.__dict__
+                        
+                        # Log activity
+                        patient_name = g.data_store.patients.get(bill.patient_id, {}).get('name', 'Unknown')
+                        g.data_store.log_activity({
+                            'timestamp': datetime.now().isoformat(),
+                            'user': 'System',
+                            'action': 'Online Payment Recorded',
+                            'details': f"Online payment for {patient_name} via Midtrans (Order ID: {order_id})"
+                        })
+        
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        current_app.logger.error(f"Payment notification error: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @main_bp.route('/department')
 def department_stats():
     """Display department statistics page"""
