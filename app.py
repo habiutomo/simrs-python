@@ -8,12 +8,8 @@ from flask_sqlalchemy import SQLAlchemy
 # Initialize Flask application
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "simrs-development-key")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///instance/simrs.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///simrs.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Initialize database tables
-with app.app_context():
-    db.create_all()
 
 db = SQLAlchemy(app)
 
