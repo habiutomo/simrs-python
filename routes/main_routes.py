@@ -574,3 +574,40 @@ def set_language():
     locale = request.form.get('locale', 'id')
     session['locale'] = locale
     return redirect(url_for('main_bp.settings'))
+
+# Administrative Module Routes
+
+@main_bp.route('/accounting')
+def accounting():
+    """Display the accounting page"""
+    return render_template('accounting.html')
+
+@main_bp.route('/procurement')
+def procurement():
+    """Display the procurement page"""
+    return render_template('procurement.html')
+
+@main_bp.route('/inventory')
+def inventory():
+    """Display the inventory and assets page"""
+    return render_template('inventory.html')
+
+@main_bp.route('/human-resources')
+def human_resources():
+    """Display the human resources page"""
+    return render_template('hr.html')
+
+@main_bp.route('/payroll')
+def payroll():
+    """Display the payroll page"""
+    return render_template('payroll.html')
+
+@main_bp.route('/reports')
+def reports():
+    """Display the reports and analytics page"""
+    return render_template('reports.html')
+
+@main_bp.route('/integration')
+def integration():
+    """Display the system integration page"""
+    return render_template('integration.html')

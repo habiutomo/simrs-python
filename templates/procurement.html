@@ -1,0 +1,889 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    Pembelian & Pengadaan
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Daftar Permintaan Pembelian</h5>
+                <div>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPurchaseRequestModal">
+                        <i class="fas fa-plus"></i> Permintaan Baru
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="exportRequestBtn">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter and Search -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="statusFilter">
+                            <option value="all">Semua Status</option>
+                            <option value="draft">Draft</option>
+                            <option value="pending">Menunggu Persetujuan</option>
+                            <option value="approved">Disetujui</option>
+                            <option value="rejected">Ditolak</option>
+                            <option value="ordered">Sudah Dipesan</option>
+                            <option value="completed">Selesai</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="departmentFilter">
+                            <option value="all">Semua Departemen</option>
+                            <option value="medical">Medis</option>
+                            <option value="pharmacy">Farmasi</option>
+                            <option value="laboratory">Laboratorium</option>
+                            <option value="radiology">Radiologi</option>
+                            <option value="administration">Administrasi</option>
+                            <option value="maintenance">Pemeliharaan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="dateFilter">
+                            <option value="all">Semua Tanggal</option>
+                            <option value="today">Hari Ini</option>
+                            <option value="thisWeek">Minggu Ini</option>
+                            <option value="thisMonth">Bulan Ini</option>
+                            <option value="lastMonth">Bulan Lalu</option>
+                            <option value="custom">Kustom...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Cari permintaan..." id="searchRequest">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchase Requests Table -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>No. PR</th>
+                                <th>Tanggal</th>
+                                <th>Departemen</th>
+                                <th>Pemohon</th>
+                                <th>Jumlah Item</th>
+                                <th>Estimasi Biaya</th>
+                                <th>Status</th>
+                                <th>Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>PR-2025-0415-001</td>
+                                <td>2025-04-15</td>
+                                <td>Farmasi</td>
+                                <td>Dr. Budi Santoso</td>
+                                <td>8</td>
+                                <td>Rp 25,000,000</td>
+                                <td><span class="badge bg-warning">Menunggu Persetujuan</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewRequestModal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PR-2025-0414-002</td>
+                                <td>2025-04-14</td>
+                                <td>Laboratorium</td>
+                                <td>Dr. Maya Kusumo</td>
+                                <td>3</td>
+                                <td>Rp 18,700,000</td>
+                                <td><span class="badge bg-success">Disetujui</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewRequestModal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PR-2025-0412-003</td>
+                                <td>2025-04-12</td>
+                                <td>Radiologi</td>
+                                <td>Dr. Andi Wijaya</td>
+                                <td>1</td>
+                                <td>Rp 120,000,000</td>
+                                <td><span class="badge bg-info">Sudah Dipesan</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewRequestModal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success">
+                                            <i class="fas fa-truck"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PR-2025-0410-004</td>
+                                <td>2025-04-10</td>
+                                <td>Administrasi</td>
+                                <td>Siti Aminah</td>
+                                <td>12</td>
+                                <td>Rp 8,500,000</td>
+                                <td><span class="badge bg-success">Selesai</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#viewRequestModal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Ringkasan Pengadaan</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="card bg-primary text-white p-2">
+                            <h2 class="mb-0">25</h2>
+                            <span>Total PR</span>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="card bg-warning text-dark p-2">
+                            <h2 class="mb-0">7</h2>
+                            <span>Menunggu Persetujuan</span>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="card bg-info text-white p-2">
+                            <h2 class="mb-0">5</h2>
+                            <span>Dalam Proses</span>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="card bg-success text-white p-2">
+                            <h2 class="mb-0">13</h2>
+                            <span>Selesai</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <canvas id="requestsByDepartmentChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Pembelian Terbaru</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>No. PO</th>
+                                <th>Tanggal</th>
+                                <th>Supplier</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>ETD</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>PO-2025-0414-001</td>
+                                <td>2025-04-14</td>
+                                <td>PT Medika Sentosa</td>
+                                <td>Rp 18,700,000</td>
+                                <td><span class="badge bg-primary">Dipesan</span></td>
+                                <td>2025-04-21</td>
+                            </tr>
+                            <tr>
+                                <td>PO-2025-0412-002</td>
+                                <td>2025-04-12</td>
+                                <td>PT Radiologi Nusantara</td>
+                                <td>Rp 120,000,000</td>
+                                <td><span class="badge bg-info">Dalam Pengiriman</span></td>
+                                <td>2025-05-10</td>
+                            </tr>
+                            <tr>
+                                <td>PO-2025-0409-003</td>
+                                <td>2025-04-09</td>
+                                <td>PT Farmasi Jaya</td>
+                                <td>Rp 32,500,000</td>
+                                <td><span class="badge bg-success">Diterima</span></td>
+                                <td>2025-04-15</td>
+                            </tr>
+                            <tr>
+                                <td>PO-2025-0408-004</td>
+                                <td>2025-04-08</td>
+                                <td>PT Alat Kesehatan Indonesia</td>
+                                <td>Rp 75,200,000</td>
+                                <td><span class="badge bg-success">Diterima</span></td>
+                                <td>2025-04-12</td>
+                            </tr>
+                            <tr>
+                                <td>PO-2025-0405-005</td>
+                                <td>2025-04-05</td>
+                                <td>PT Medika Sentosa</td>
+                                <td>Rp 45,800,000</td>
+                                <td><span class="badge bg-success">Diterima</span></td>
+                                <td>2025-04-10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#purchaseOrderModal">
+                        <i class="fas fa-th-list me-2"></i> Lihat Semua Purchase Order
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Daftar Supplier</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-9">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Cari supplier..." id="searchSupplier">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                            <i class="fas fa-plus me-2"></i> Tambah Supplier
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nama Supplier</th>
+                                <th>Kontak</th>
+                                <th>Telepon</th>
+                                <th>Email</th>
+                                <th>Alamat</th>
+                                <th>Kategori</th>
+                                <th>Status</th>
+                                <th>Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>PT Medika Sentosa</td>
+                                <td>Andri Gunawan</td>
+                                <td>021-5552345</td>
+                                <td>sales@medikasentosa.co.id</td>
+                                <td>Jl. Sudirman No. 123, Jakarta</td>
+                                <td>Alat Kesehatan, Obat</td>
+                                <td><span class="badge bg-success">Aktif</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PT Farmasi Jaya</td>
+                                <td>Sinta Dewi</td>
+                                <td>021-6667890</td>
+                                <td>info@farmasijaya.com</td>
+                                <td>Jl. Gatot Subroto No. 45, Jakarta</td>
+                                <td>Obat, Bahan Kimia</td>
+                                <td><span class="badge bg-success">Aktif</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PT Radiologi Nusantara</td>
+                                <td>Budi Hartono</td>
+                                <td>021-7778012</td>
+                                <td>sales@radionusantara.com</td>
+                                <td>Jl. MT Haryono No. 78, Jakarta</td>
+                                <td>Alat Radiologi</td>
+                                <td><span class="badge bg-success">Aktif</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PT Alat Kesehatan Indonesia</td>
+                                <td>Joko Susilo</td>
+                                <td>021-8883467</td>
+                                <td>info@alkes.co.id</td>
+                                <td>Jl. Cikini Raya No. 56, Jakarta</td>
+                                <td>Alat Kesehatan, Furnitur Medis</td>
+                                <td><span class="badge bg-warning">Evaluasi</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PT Laboratorium Medis</td>
+                                <td>Dewi Anggraini</td>
+                                <td>021-9995678</td>
+                                <td>kontakt@labmedis.id</td>
+                                <td>Jl. Tebet Raya No. 23, Jakarta</td>
+                                <td>Peralatan Lab, Bahan Kimia</td>
+                                <td><span class="badge bg-danger">Tidak Aktif</span></td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Purchase Request Modal -->
+<div class="modal fade" id="addPurchaseRequestModal" tabindex="-1" aria-labelledby="addPurchaseRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPurchaseRequestModalLabel">Tambah Permintaan Pembelian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="purchaseRequestForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="request_date" class="form-label">Tanggal Permintaan</label>
+                            <input type="date" class="form-control" id="request_date" name="request_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="department" class="form-label">Departemen</label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="">Pilih Departemen...</option>
+                                <option value="medical">Medis</option>
+                                <option value="pharmacy">Farmasi</option>
+                                <option value="laboratory">Laboratorium</option>
+                                <option value="radiology">Radiologi</option>
+                                <option value="administration">Administrasi</option>
+                                <option value="maintenance">Pemeliharaan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="requester" class="form-label">Pemohon</label>
+                            <input type="text" class="form-control" id="requester" name="requester" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="required_date" class="form-label">Tanggal Dibutuhkan</label>
+                            <input type="date" class="form-control" id="required_date" name="required_date" required>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mt-4">Item yang Diminta</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="request_items">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">No.</th>
+                                    <th width="40%">Item</th>
+                                    <th width="10%">Satuan</th>
+                                    <th width="10%">Jumlah</th>
+                                    <th width="15%">Est. Harga</th>
+                                    <th width="15%">Total</th>
+                                    <th width="5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="request_items_container">
+                                <tr class="request-item">
+                                    <td>
+                                        <span class="item-number">1</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" name="item_name[]" required>
+                                    </td>
+                                    <td>
+                                        <select class="form-select" name="unit[]">
+                                            <option value="pcs">Pcs</option>
+                                            <option value="box">Box</option>
+                                            <option value="bottle">Botol</option>
+                                            <option value="carton">Karton</option>
+                                            <option value="kg">Kg</option>
+                                            <option value="gram">Gram</option>
+                                            <option value="liter">Liter</option>
+                                            <option value="meter">Meter</option>
+                                            <option value="pack">Pack</option>
+                                            <option value="set">Set</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control item-qty" name="quantity[]" value="1" min="1" required>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control item-price" name="price[]" value="0" min="0" step="1000">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control item-total" value="0" readonly>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm remove-item">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7">
+                                        <button type="button" class="btn btn-sm btn-success" id="add_item_btn">
+                                            <i class="fas fa-plus"></i> Tambah Item
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="table-light">
+                                    <th colspan="5" class="text-end">Total Estimasi Biaya:</th>
+                                    <th>
+                                        <span id="total_cost">0</span>
+                                    </th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="purpose" class="form-label">Tujuan Penggunaan</label>
+                        <textarea class="form-control" id="purpose" name="purpose" rows="2" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Catatan Tambahan</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="submitPurchaseRequest">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Purchase Request Modal -->
+<div class="modal fade" id="viewRequestModal" tabindex="-1" aria-labelledby="viewRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewRequestModalLabel">Detail Permintaan Pembelian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-bordered">
+                            <tr>
+                                <th class="table-light" width="40%">No. PR</th>
+                                <td>PR-2025-0415-001</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Tanggal</th>
+                                <td>15 April 2025</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Departemen</th>
+                                <td>Farmasi</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Pemohon</th>
+                                <td>Dr. Budi Santoso</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-bordered">
+                            <tr>
+                                <th class="table-light" width="40%">Status</th>
+                                <td><span class="badge bg-warning">Menunggu Persetujuan</span></td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Tgl. Dibutuhkan</th>
+                                <td>30 April 2025</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Tgl. Persetujuan</th>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <th class="table-light">Disetujui Oleh</th>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <h6 class="mt-4">Item yang Diminta</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>No.</th>
+                                <th>Item</th>
+                                <th>Satuan</th>
+                                <th>Jumlah</th>
+                                <th>Est. Harga</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Paracetamol 500mg</td>
+                                <td>Box</td>
+                                <td>100</td>
+                                <td>Rp 50,000</td>
+                                <td>Rp 5,000,000</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Amoxicillin 500mg</td>
+                                <td>Box</td>
+                                <td>80</td>
+                                <td>Rp 75,000</td>
+                                <td>Rp 6,000,000</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Infus Set</td>
+                                <td>Box</td>
+                                <td>50</td>
+                                <td>Rp 120,000</td>
+                                <td>Rp 6,000,000</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Omeprazole 20mg</td>
+                                <td>Box</td>
+                                <td>40</td>
+                                <td>Rp 100,000</td>
+                                <td>Rp 4,000,000</td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Vitamin C 500mg</td>
+                                <td>Bottle</td>
+                                <td>20</td>
+                                <td>Rp 75,000</td>
+                                <td>Rp 1,500,000</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Gloves (Latex)</td>
+                                <td>Box</td>
+                                <td>10</td>
+                                <td>Rp 100,000</td>
+                                <td>Rp 1,000,000</td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Masker N95</td>
+                                <td>Box</td>
+                                <td>10</td>
+                                <td>Rp 150,000</td>
+                                <td>Rp 1,500,000</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <th colspan="5" class="text-end">Total Estimasi Biaya:</th>
+                                <th>Rp 25,000,000</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Tujuan Penggunaan</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">Untuk memenuhi kebutuhan obat-obatan dan perlengkapan medis di departemen farmasi selama tiga bulan ke depan.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">Catatan Tambahan</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">Mohon segera diproses, karena beberapa item seperti Amoxicillin dan Infus Set sudah mendekati stok minimum.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-danger">Tolak</button>
+                <button type="button" class="btn btn-success">Setujui</button>
+                <button type="button" class="btn btn-primary">Cetak PR</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize chart
+        const ctxDepartment = document.getElementById('requestsByDepartmentChart').getContext('2d');
+        new Chart(ctxDepartment, {
+            type: 'bar',
+            data: {
+                labels: ['Farmasi', 'Laboratorium', 'Radiologi', 'Medis', 'Administrasi', 'Pemeliharaan'],
+                datasets: [{
+                    label: 'Jumlah Permintaan',
+                    data: [8, 5, 3, 4, 3, 2],
+                    backgroundColor: [
+                        '#4e73df',
+                        '#1cc88a',
+                        '#36b9cc',
+                        '#f6c23e',
+                        '#e74a3b',
+                        '#6f42c1'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Handle add item button
+        document.getElementById('add_item_btn').addEventListener('click', function() {
+            const container = document.getElementById('request_items_container');
+            const newRow = container.querySelector('.request-item').cloneNode(true);
+            
+            // Update item number
+            const itemCount = container.querySelectorAll('.request-item').length + 1;
+            newRow.querySelector('.item-number').textContent = itemCount;
+            
+            // Clear input values
+            newRow.querySelectorAll('input').forEach(input => {
+                if (input.type === 'number' && input.classList.contains('item-qty')) {
+                    input.value = '1';
+                } else if (input.type === 'number' && input.classList.contains('item-price')) {
+                    input.value = '0';
+                } else if (!input.classList.contains('item-total')) {
+                    input.value = '';
+                }
+                
+                if (input.classList.contains('item-qty') || input.classList.contains('item-price')) {
+                    input.addEventListener('input', updateTotals);
+                }
+            });
+            
+            // Reset item total
+            newRow.querySelector('.item-total').value = '0';
+            
+            // Set up remove button
+            const removeBtn = newRow.querySelector('.remove-item');
+            removeBtn.addEventListener('click', function() {
+                if (container.querySelectorAll('.request-item').length > 1) {
+                    this.closest('tr').remove();
+                    // Update item numbers
+                    container.querySelectorAll('.request-item').forEach((row, index) => {
+                        row.querySelector('.item-number').textContent = index + 1;
+                    });
+                    updateTotals();
+                } else {
+                    alert('Minimal harus ada satu item.');
+                }
+            });
+            
+            container.appendChild(newRow);
+        });
+        
+        // Update totals when price or quantity changes
+        function updateItemTotal(row) {
+            const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+            const price = parseFloat(row.querySelector('.item-price').value) || 0;
+            row.querySelector('.item-total').value = (qty * price).toLocaleString('id-ID');
+        }
+        
+        // Calculate totals
+        function updateTotals() {
+            let total = 0;
+            document.querySelectorAll('.request-item').forEach(row => {
+                updateItemTotal(row);
+                const itemTotal = parseFloat(row.querySelector('.item-total').value.replace(/\./g, '').replace(',', '.')) || 0;
+                total += itemTotal;
+            });
+            
+            document.getElementById('total_cost').textContent = total.toLocaleString('id-ID');
+        }
+        
+        // Add event listeners for initial row
+        document.querySelectorAll('.request-item').forEach(row => {
+            row.querySelectorAll('.item-qty, .item-price').forEach(input => {
+                input.addEventListener('input', updateTotals);
+            });
+            
+            const removeBtn = row.querySelector('.remove-item');
+            removeBtn.addEventListener('click', function() {
+                if (document.querySelectorAll('.request-item').length > 1) {
+                    this.closest('tr').remove();
+                    updateTotals();
+                } else {
+                    alert('Minimal harus ada satu item.');
+                }
+            });
+        });
+        
+        // Handle submit button
+        document.getElementById('submitPurchaseRequest').addEventListener('click', function() {
+            // Validate form
+            const form = document.getElementById('purchaseRequestForm');
+            if (!form.checkValidity()) {
+                // Trigger the browser's built-in validation
+                // This will show validation messages
+                return;
+            }
+            
+            // Here we would handle form submission, validation, etc.
+            // For now, just close the modal and show a success message
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addPurchaseRequestModal'));
+            modal.hide();
+            
+            // Show success message
+            alert('Permintaan pembelian berhasil ditambahkan!');
+        });
+        
+        // Initial calculation
+        updateTotals();
+    });
+</script>
+{% endblock %}

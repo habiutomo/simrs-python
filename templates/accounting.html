@@ -1,0 +1,553 @@
+{% extends "index.html" %}
+
+{% block page_title %}
+<h1 class="h3">
+    Akuntansi Umum
+</h1>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Jurnal Umum</h5>
+                <div>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addJournalEntryModal">
+                        <i class="fas fa-plus"></i> Jurnal Baru
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="exportJournalBtn">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Filter and Search -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="accountFilter">
+                            <option value="all">Semua Akun</option>
+                            <option value="assets">Aset</option>
+                            <option value="liabilities">Kewajiban</option>
+                            <option value="equity">Ekuitas</option>
+                            <option value="revenue">Pendapatan</option>
+                            <option value="expenses">Beban</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="dateFilter">
+                            <option value="all">Semua Tanggal</option>
+                            <option value="today">Hari Ini</option>
+                            <option value="thisWeek">Minggu Ini</option>
+                            <option value="thisMonth">Bulan Ini</option>
+                            <option value="lastMonth">Bulan Lalu</option>
+                            <option value="thisYear">Tahun Ini</option>
+                            <option value="custom">Kustom...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Rp</span>
+                            <input type="number" class="form-control" placeholder="Min" id="minAmount">
+                            <input type="number" class="form-control" placeholder="Max" id="maxAmount">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="Cari transaksi..." id="searchJournal">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Journal Entries Table -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>No. Referensi</th>
+                                <th>Deskripsi</th>
+                                <th>Akun</th>
+                                <th>Debit</th>
+                                <th>Kredit</th>
+                                <th>Saldo</th>
+                                <th>Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2025-04-15</td>
+                                <td>JV-2025-041501</td>
+                                <td>Pembayaran tagihan pasien</td>
+                                <td>Kas</td>
+                                <td>1,500,000</td>
+                                <td>-</td>
+                                <td>+1,500,000</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-15</td>
+                                <td>JV-2025-041501</td>
+                                <td>Pembayaran tagihan pasien</td>
+                                <td>Pendapatan Layanan Medis</td>
+                                <td>-</td>
+                                <td>1,500,000</td>
+                                <td>+1,500,000</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-14</td>
+                                <td>JV-2025-041401</td>
+                                <td>Pembelian obat-obatan</td>
+                                <td>Persediaan Obat</td>
+                                <td>3,200,000</td>
+                                <td>-</td>
+                                <td>+3,200,000</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025-04-14</td>
+                                <td>JV-2025-041401</td>
+                                <td>Pembelian obat-obatan</td>
+                                <td>Kas</td>
+                                <td>-</td>
+                                <td>3,200,000</td>
+                                <td>-3,200,000</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Neraca Keuangan</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Periode</label>
+                    <select class="form-select" id="balanceSheetPeriod">
+                        <option value="thisMonth">Bulan Ini</option>
+                        <option value="lastMonth">Bulan Lalu</option>
+                        <option value="thisQuarter">Kuartal Ini</option>
+                        <option value="thisYear">Tahun Ini</option>
+                        <option value="lastYear">Tahun Lalu</option>
+                    </select>
+                </div>
+                
+                <h6 class="mt-4">Aset</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Kas dan Setara Kas</td>
+                        <td class="text-end">Rp 1,250,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Piutang</td>
+                        <td class="text-end">Rp 450,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Persediaan</td>
+                        <td class="text-end">Rp 375,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Aset Tetap</td>
+                        <td class="text-end">Rp 2,800,000,000</td>
+                    </tr>
+                    <tr class="table-primary">
+                        <th>Total Aset</th>
+                        <th class="text-end">Rp 4,875,000,000</th>
+                    </tr>
+                </table>
+                
+                <h6 class="mt-4">Kewajiban & Ekuitas</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Hutang Jangka Pendek</td>
+                        <td class="text-end">Rp 320,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Hutang Jangka Panjang</td>
+                        <td class="text-end">Rp 1,200,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Modal</td>
+                        <td class="text-end">Rp 2,500,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Laba Ditahan</td>
+                        <td class="text-end">Rp 855,000,000</td>
+                    </tr>
+                    <tr class="table-primary">
+                        <th>Total Kewajiban & Ekuitas</th>
+                        <th class="text-end">Rp 4,875,000,000</th>
+                    </tr>
+                </table>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-print me-2"></i> Cetak Neraca
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Laba Rugi</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Periode</label>
+                    <select class="form-select" id="incomePeriod">
+                        <option value="thisMonth">Bulan Ini</option>
+                        <option value="lastMonth">Bulan Lalu</option>
+                        <option value="thisQuarter">Kuartal Ini</option>
+                        <option value="thisYear">Tahun Ini</option>
+                        <option value="lastYear">Tahun Lalu</option>
+                    </select>
+                </div>
+                
+                <h6 class="mt-4">Pendapatan</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Pendapatan Layanan Medis</td>
+                        <td class="text-end">Rp 625,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Pendapatan Farmasi</td>
+                        <td class="text-end">Rp 320,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Pendapatan Lain-lain</td>
+                        <td class="text-end">Rp 75,000,000</td>
+                    </tr>
+                    <tr class="table-success">
+                        <th>Total Pendapatan</th>
+                        <th class="text-end">Rp 1,020,000,000</th>
+                    </tr>
+                </table>
+                
+                <h6 class="mt-4">Beban</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Beban Gaji</td>
+                        <td class="text-end">Rp 450,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Beban Operasional</td>
+                        <td class="text-end">Rp 180,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Beban Administrasi</td>
+                        <td class="text-end">Rp 85,000,000</td>
+                    </tr>
+                    <tr>
+                        <td>Beban Lain-lain</td>
+                        <td class="text-end">Rp 35,000,000</td>
+                    </tr>
+                    <tr class="table-danger">
+                        <th>Total Beban</th>
+                        <th class="text-end">Rp 750,000,000</th>
+                    </tr>
+                </table>
+                
+                <table class="table table-sm mt-4">
+                    <tr class="table-primary">
+                        <th>Laba Bersih</th>
+                        <th class="text-end">Rp 270,000,000</th>
+                    </tr>
+                </table>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-primary" type="button">
+                        <i class="fas fa-print me-2"></i> Cetak Laporan Laba Rugi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Journal Entry Modal -->
+<div class="modal fade" id="addJournalEntryModal" tabindex="-1" aria-labelledby="addJournalEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addJournalEntryModalLabel">Tambah Jurnal Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="journalEntryForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="entry_date" class="form-label">Tanggal</label>
+                            <input type="date" class="form-control" id="entry_date" name="entry_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="reference_no" class="form-label">No. Referensi</label>
+                            <input type="text" class="form-control" id="reference_no" name="reference_no" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Deskripsi</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                    
+                    <h6 class="mt-4">Detail Jurnal</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="journal_details">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40%">Akun</th>
+                                    <th width="20%">Debit</th>
+                                    <th width="20%">Kredit</th>
+                                    <th width="15%">Departemen</th>
+                                    <th width="5%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="journal_details_container">
+                                <tr class="journal-item">
+                                    <td>
+                                        <select class="form-select" name="account[]" required>
+                                            <option value="">Pilih Akun...</option>
+                                            <option value="101">101 - Kas</option>
+                                            <option value="102">102 - Bank</option>
+                                            <option value="103">103 - Piutang</option>
+                                            <option value="104">104 - Persediaan</option>
+                                            <option value="201">201 - Hutang</option>
+                                            <option value="301">301 - Modal</option>
+                                            <option value="401">401 - Pendapatan</option>
+                                            <option value="501">501 - Beban Gaji</option>
+                                            <option value="502">502 - Beban Operasional</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control debit-amount" name="debit[]" value="0" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control credit-amount" name="credit[]" value="0" min="0">
+                                    </td>
+                                    <td>
+                                        <select class="form-select" name="department[]">
+                                            <option value="">Pilih...</option>
+                                            <option value="admin">Administrasi</option>
+                                            <option value="medical">Medis</option>
+                                            <option value="pharmacy">Farmasi</option>
+                                            <option value="radiology">Radiologi</option>
+                                            <option value="lab">Laboratorium</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm remove-journal-item">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5">
+                                        <button type="button" class="btn btn-sm btn-success" id="add_journal_item_btn">
+                                            <i class="fas fa-plus"></i> Tambah Baris
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="table-light">
+                                    <th class="text-end">Total:</th>
+                                    <th>
+                                        <span id="total_debit">0</span>
+                                    </th>
+                                    <th>
+                                        <span id="total_credit">0</span>
+                                    </th>
+                                    <th colspan="2"></th>
+                                </tr>
+                                <tr class="table-light">
+                                    <th class="text-end">Selisih:</th>
+                                    <th colspan="4">
+                                        <span id="balance_diff">0</span>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Catatan</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="submitJournalEntry">Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle add journal item button
+        document.getElementById('add_journal_item_btn').addEventListener('click', function() {
+            const container = document.getElementById('journal_details_container');
+            const newRow = container.querySelector('.journal-item').cloneNode(true);
+            
+            // Clear input values
+            newRow.querySelectorAll('select, input').forEach(input => {
+                if (input.type === 'number') {
+                    input.value = '0';
+                } else {
+                    input.value = '';
+                }
+                
+                if (input.classList.contains('debit-amount') || input.classList.contains('credit-amount')) {
+                    input.addEventListener('input', updateTotals);
+                }
+            });
+            
+            // Set up remove button
+            const removeBtn = newRow.querySelector('.remove-journal-item');
+            removeBtn.addEventListener('click', function() {
+                if (container.querySelectorAll('.journal-item').length > 1) {
+                    this.closest('tr').remove();
+                    updateTotals();
+                } else {
+                    alert('Minimal harus ada satu baris jurnal.');
+                }
+            });
+            
+            container.appendChild(newRow);
+        });
+        
+        // Add event listeners for initial row
+        document.querySelectorAll('.journal-item').forEach(row => {
+            row.querySelectorAll('.debit-amount, .credit-amount').forEach(input => {
+                input.addEventListener('input', updateTotals);
+            });
+            
+            const removeBtn = row.querySelector('.remove-journal-item');
+            removeBtn.addEventListener('click', function() {
+                if (document.querySelectorAll('.journal-item').length > 1) {
+                    this.closest('tr').remove();
+                    updateTotals();
+                } else {
+                    alert('Minimal harus ada satu baris jurnal.');
+                }
+            });
+        });
+        
+        // Update totals for debit and credit columns
+        function updateTotals() {
+            let totalDebit = 0;
+            let totalCredit = 0;
+            
+            document.querySelectorAll('.debit-amount').forEach(input => {
+                totalDebit += parseFloat(input.value) || 0;
+            });
+            
+            document.querySelectorAll('.credit-amount').forEach(input => {
+                totalCredit += parseFloat(input.value) || 0;
+            });
+            
+            document.getElementById('total_debit').textContent = totalDebit.toLocaleString('id-ID');
+            document.getElementById('total_credit').textContent = totalCredit.toLocaleString('id-ID');
+            
+            const diff = totalDebit - totalCredit;
+            document.getElementById('balance_diff').textContent = diff.toLocaleString('id-ID');
+            
+            // Highlight difference if not balanced
+            if (diff !== 0) {
+                document.getElementById('balance_diff').classList.add('text-danger');
+            } else {
+                document.getElementById('balance_diff').classList.remove('text-danger');
+            }
+        }
+        
+        // Handle submit button
+        document.getElementById('submitJournalEntry').addEventListener('click', function() {
+            // Basic validation
+            const totalDebit = parseFloat(document.getElementById('total_debit').textContent.replace(/\./g, '').replace(',', '.')) || 0;
+            const totalCredit = parseFloat(document.getElementById('total_credit').textContent.replace(/\./g, '').replace(',', '.')) || 0;
+            
+            if (totalDebit !== totalCredit) {
+                alert('Jurnal tidak seimbang. Total debit harus sama dengan total kredit.');
+                return;
+            }
+            
+            // Here we would handle form submission, validation, etc.
+            // For now, just close the modal and show a success message
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addJournalEntryModal'));
+            modal.hide();
+            
+            // Show success message
+            alert('Jurnal berhasil ditambahkan!');
+        });
+        
+        // Initial calculation
+        updateTotals();
+    });
+</script>
+{% endblock %}
