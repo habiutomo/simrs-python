@@ -52,51 +52,24 @@
                         </div>
                     </div>
 
-                    <!-- E-Reporting Integration -->
+                    <!-- Laboratory Information System -->
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-file-medical-alt"></i>
-                                        </span>
+                                        <i class="fas fa-flask fa-2x text-primary"></i>
                                     </div>
                                     <div>
-                                        <h5 class="card-title mb-0">E-Reporting</h5>
-                                        <p class="text-muted small mb-0">Pelaporan Regulasi RL</p>
-                                    </div>
-                                </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem pelaporan elektronik Dinas Kesehatan dan Kementerian Kesehatan untuk pelaporan wajib rumah sakit.</p>
-                                <div class="d-grid">
-                                    <a href="{{ url_for('main_bp.reports') }}" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Lab Integration -->
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-flask"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-0">Lab Information System</h5>
+                                        <h5 class="card-title mb-0">Sistem Laboratorium</h5>
                                         <p class="text-muted small mb-0">Integrasi LIS</p>
                                     </div>
                                 </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem laboratorium untuk mengirim permintaan pemeriksaan dan menerima hasil pemeriksaan secara otomatis.</p>
+                                <p class="card-text flex-fill">Integrasi dengan Laboratory Information System (LIS) untuk pengelolaan hasil laboratorium.</p>
                                 <div class="d-grid">
-                                    <a href="{{ url_for('main_bp.laboratory') }}" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-clock"></i> Segera Hadir
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -108,45 +81,41 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-x-ray"></i>
-                                        </span>
+                                        <i class="fas fa-x-ray fa-2x text-primary"></i>
                                     </div>
                                     <div>
-                                        <h5 class="card-title mb-0">Radiology Information</h5>
-                                        <p class="text-muted small mb-0">Integrasi RIS/PACS</p>
+                                        <h5 class="card-title mb-0">Radiologi</h5>
+                                        <p class="text-muted small mb-0">PACS & RIS</p>
                                     </div>
                                 </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem radiologi (RIS) dan PACS untuk mengelola pemeriksaan pencitraan dan hasil pembacaan radiologi.</p>
+                                <p class="card-text flex-fill">Integrasi dengan sistem PACS dan RIS untuk pengelolaan hasil radiologi.</p>
                                 <div class="d-grid">
-                                    <a href="{{ url_for('main_bp.radiology') }}" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-clock"></i> Segera Hadir
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Pharmacy Integration -->
+                    <!-- Electronic Reporting -->
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card h-100">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-pills"></i>
-                                        </span>
+                                        <i class="fas fa-file-medical-alt fa-2x text-primary"></i>
                                     </div>
                                     <div>
-                                        <h5 class="card-title mb-0">Pharmacy System</h5>
-                                        <p class="text-muted small mb-0">Integrasi Apotek</p>
+                                        <h5 class="card-title mb-0">E-Reporting</h5>
+                                        <p class="text-muted small mb-0">Pelaporan Elektronik</p>
                                     </div>
                                 </div>
-                                <p class="card-text flex-fill">Integrasi dengan sistem apotek untuk manajemen obat, resep elektronik, dan pengelolaan persediaan.</p>
+                                <p class="card-text flex-fill">Integrasi pelaporan elektronik ke Dinas Kesehatan dan Kementerian Kesehatan.</p>
                                 <div class="d-grid">
-                                    <a href="{{ url_for('main_bp.pharmacy') }}" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-clock"></i> Segera Hadir
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -158,20 +127,41 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-center mb-3">
                                     <div class="flex-shrink-0 me-3">
-                                        <span class="display-5 text-primary">
-                                            <i class="fas fa-credit-card"></i>
-                                        </span>
+                                        <i class="fas fa-credit-card fa-2x text-primary"></i>
                                     </div>
                                     <div>
                                         <h5 class="card-title mb-0">Payment Gateway</h5>
-                                        <p class="text-muted small mb-0">Integrasi Pembayaran</p>
+                                        <p class="text-muted small mb-0">Pembayaran Online</p>
                                     </div>
                                 </div>
-                                <p class="card-text flex-fill">Integrasi dengan payment gateway untuk pembayaran online melalui berbagai metode pembayaran.</p>
+                                <p class="card-text flex-fill">Integrasi dengan payment gateway untuk pembayaran online.</p>
                                 <div class="d-grid">
-                                    <a href="#" class="btn btn-primary">
-                                        <i class="fas fa-cog"></i> Konfigurasi
-                                    </a>
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-clock"></i> Segera Hadir
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Card Integration -->
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <i class="fas fa-id-card fa-2x text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="card-title mb-0">Smart Card</h5>
+                                        <p class="text-muted small mb-0">Kartu Pasien</p>
+                                    </div>
+                                </div>
+                                <p class="card-text flex-fill">Integrasi dengan sistem kartu pintar untuk identifikasi pasien.</p>
+                                <div class="d-grid">
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-clock"></i> Segera Hadir
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -182,7 +172,7 @@
         </div>
     </div>
 
-    <!-- Integration Activity Log -->
+    <!-- Integration Activity Logs -->
     <div class="col-lg-12 mb-4">
         <div class="card">
             <div class="card-header">
@@ -193,29 +183,35 @@
                     <table class="table table-bordered table-striped">
                         <thead class="table-light">
                             <tr>
-                                <th>Waktu</th>
-                                <th>Sistem</th>
+                                <th>Tanggal/Waktu</th>
+                                <th>Layanan</th>
                                 <th>Endpoint</th>
                                 <th>Status</th>
                                 <th>Pesan</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for log in api_logs %}
-                            <tr>
-                                <td>{{ log.request_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                <td>{{ log.service_type }}</td>
-                                <td>{{ log.endpoint }}</td>
-                                <td>
-                                    {% if log.is_success %}
-                                    <span class="badge bg-success">Sukses</span>
-                                    {% else %}
-                                    <span class="badge bg-danger">Gagal</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ log.response_message }}</td>
-                            </tr>
-                            {% endfor %}
+                            {% if api_logs %}
+                                {% for log in api_logs %}
+                                <tr>
+                                    <td>{{ log.request_timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>{{ log.endpoint }}</td>
+                                    <td>{{ log.request_data }}</td>
+                                    <td>
+                                        {% if log.is_success %}
+                                            <span class="badge bg-success">Sukses</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Gagal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ log.response_code }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Belum ada log aktivitas</td>
+                                </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
