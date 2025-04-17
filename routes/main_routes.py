@@ -721,7 +721,94 @@ def payroll():
 @main_bp.route('/reports')
 def reports():
     """Display the reports and analytics page"""
-    return render_template('reports.html')
+    from datetime import datetime, timedelta
+    from random import randint
+    
+    # Sample data for demonstration
+    today_date = datetime.now().strftime('%Y-%m-%d')
+    
+    return render_template('reports.html',
+                          today_date=today_date)
+
+@main_bp.route('/reports/create', methods=['GET', 'POST'])
+def create_report():
+    """Create a new report"""
+    if request.method == 'POST':
+        # Handle report creation
+        report_name = request.form.get('reportName')
+        report_category = request.form.get('reportCategory')
+        report_period = request.form.get('reportPeriod')
+        report_formats = request.form.getlist('reportFormat')
+        
+        # In a real implementation, save to database
+        flash(f'Laporan "{report_name}" berhasil dibuat.', 'success')
+        return redirect(url_for('main_bp.reports'))
+        
+    # GET request
+    return render_template('create_report.html')
+
+@main_bp.route('/reports/view/<int:report_id>')
+def view_report(report_id):
+    """View a specific report"""
+    # In a real implementation, fetch report from database
+    return render_template('view_report.html', report_id=report_id)
+
+@main_bp.route('/reports/export/<int:report_id>')
+def export_report(report_id):
+    """Export a report in specified format"""
+    from utils.reports import format_report_data
+    
+    format_type = request.args.get('format', 'pdf')
+    
+    # In a real implementation, generate report data
+    # For now, just show a flash message
+    flash(f'Laporan berhasil diekspor dalam format {format_type.upper()}.', 'success')
+    return redirect(url_for('main_bp.reports'))
+
+@main_bp.route('/reports/schedule', methods=['GET', 'POST'])
+def schedule_report():
+    """Schedule a report for automatic generation"""
+    if request.method == 'POST':
+        # Handle report scheduling
+        report_id = request.form.get('reportId')
+        frequency = request.form.get('scheduleFrequency')
+        
+        # In a real implementation, save schedule to database
+        flash('Laporan berhasil dijadwalkan.', 'success')
+        return redirect(url_for('main_bp.reports'))
+        
+    # GET request - show schedule form
+    return render_template('schedule_report.html')
+
+@main_bp.route('/analytics/dashboard')
+def analytics_dashboard():
+    """Display the analytics dashboard"""
+    return render_template('analytics_dashboard.html')
+
+@main_bp.route('/analytics/metrics')
+def analytics_metrics():
+    """Display the analytics metrics page"""
+    return render_template('analytics_metrics.html')
+
+@main_bp.route('/api/reports/data')
+def api_report_data():
+    """API endpoint to get report data"""
+    from utils.reports import execute_report_query
+    
+    report_id = request.args.get('report_id')
+    # In a real implementation, fetch and execute query from database
+    
+    return jsonify({'message': 'API for report data'})
+
+@main_bp.route('/api/analytics/chart')
+def api_analytics_chart():
+    """API endpoint to get chart data for analytics"""
+    chart_type = request.args.get('type', 'bar')
+    period = request.args.get('period', 'monthly')
+    
+    # In a real implementation, fetch data and generate chart
+    
+    return jsonify({'message': 'API for analytics chart'})
 
 @main_bp.route('/integration')
 def integration():
